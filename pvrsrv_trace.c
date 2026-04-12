@@ -328,6 +328,7 @@ typedef struct pvr_dev_addr {
    uint64_t addr;
 } pvr_dev_addr_t;
 
+typedef void * pvr_handle_t;
 
 struct pvr_srv_bridge_connect_cmd {
    uint32_t build_options;
@@ -348,8 +349,8 @@ struct pvr_srv_devmem_int_ctx_create_cmd {
 } PACKED;
 
 struct pvr_srv_devmem_int_ctx_create_ret {
-   void *server_memctx;
-   void *server_memctx_data;
+   pvr_handle_t server_memctx;
+   pvr_handle_t server_memctx_data;
    enum pvr_srv_error error;
    uint32_t cpu_cache_line_size;
 } PACKED;
@@ -381,13 +382,13 @@ struct pvr_srv_heap_cfg_details_ret {
 } PACKED;
 
 struct pvr_srv_devmem_int_heap_create_cmd {
-   void *server_memctx;
+   pvr_handle_t server_memctx;
    uint32_t heap_config_index;
    uint32_t heap_index;
 } PACKED;
 
 struct pvr_srv_devmem_int_heap_create_ret {
-   void *server_heap;
+   pvr_handle_t server_heap;
    enum pvr_srv_error error;
 } PACKED;
 
@@ -405,15 +406,15 @@ struct pvr_srv_physmem_new_ram_backed_pmr_cmd {
 } PACKED;
 
 struct pvr_srv_physmem_new_ram_backed_pmr_ret {
-   void *pmr;
+   pvr_handle_t pmr;
    enum pvr_srv_error error;
    uint64_t out_flags;
 } PACKED;
 
 
 struct pvr_srv_devmem_int_map_pmr_cmd {
-   void *pmr;
-   void *reservation;
+   pvr_handle_t pmr;
+   pvr_handle_t reservation;
 } PACKED;
 
 struct pvr_srv_devmem_int_map_pmr_ret {
@@ -424,12 +425,12 @@ struct pvr_srv_devmem_int_map_pmr_ret {
 struct pvr_srv_devmem_int_reserve_range_cmd {
    pvr_dev_addr_t addr;
    uint64_t size;
-   void *server_heap;
+   pvr_handle_t server_heap;
    uint64_t flags;
 } PACKED;
 
 struct pvr_srv_devmem_int_reserve_range_ret {
-   void *reservation;
+   pvr_handle_t reservation;
    enum pvr_srv_error error;
 } PACKED;
 
@@ -451,9 +452,9 @@ struct PVRSRV_BRIDGE_OUT_DEVMEMINTRESERVERANGEANDMAPPMR
 
 
 struct pvr_srv_rgx_create_free_list_cmd {
-   void *free_list_reservation;
-   void *mem_ctx_priv_data;
-   void *global_free_list;
+   pvr_handle_t free_list_reservation;
+   pvr_handle_t mem_ctx_priv_data;
+   pvr_handle_t global_free_list;
    uint32_t grow_free_list_pages;
    uint32_t grow_param_threshold;
    uint32_t init_free_list_pages;
@@ -462,7 +463,7 @@ struct pvr_srv_rgx_create_free_list_cmd {
 } PACKED;
 
 struct pvr_srv_rgx_create_free_list_ret {
-   void *cleanup_cookie;
+   pvr_handle_t cleanup_cookie;
    enum pvr_srv_error error;
 } PACKED;
 
@@ -483,9 +484,9 @@ struct pvr_srv_rgx_create_hwrt_dataset_cmd {
    /* ROGUE_FWIF_NUM_GEOMDATAS sized array. */
    const pvr_dev_addr_t *vheap_table_dev_adds;
    /* ROGUE_FWIF_NUM_RTDATAS sized array of handles. */
-   void **hwrt_dataset;
+   pvr_handle_t*hwrt_dataset;
    /* ROGUE_FWIF_NUM_RTDATA_FREELISTS size array of handles. */
-   void **free_lists;
+   pvr_handle_t*free_lists;
    uint32_t isp_merge_lower_x;
    uint32_t isp_merge_lower_y;
    uint32_t isp_merge_scale_x;
@@ -507,14 +508,14 @@ struct pvr_srv_rgx_create_hwrt_dataset_cmd {
 
 struct pvr_srv_rgx_create_hwrt_dataset_ret {
    /* ROGUE_FWIF_NUM_RTDATAS sized array of handles. */
-   void **hwrt_dataset;
+   pvr_handle_t*hwrt_dataset;
    enum pvr_srv_error error;
 }PACKED;
 
 
 struct pvr_srv_rgx_kick_ta3d2_cmd {
    uint64_t deadline;
-   void *hw_rt_dataset;
+   pvr_handle_t hw_rt_dataset;
    void *msaa_scratch_buffer;
    void *pr_fence_ufo_sync_prim_block;
    void *render_ctx;
