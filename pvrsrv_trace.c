@@ -249,6 +249,7 @@ const char *srv_bridge_func_to_str(int b, int f)
 #define X(name) case PVR_SRV_BRIDGE_RGXTQ_##name: return #name;
 				X(RGXCREATETRANSFERCONTEXT)
 				X(RGXDESTROYTRANSFERCONTEXT)
+				X(RGXSUBMITTRANSFER2)
 				X(RGXTQGETSHAREDMEMORY)
 				X(RGXTQRELEASESHAREDMEMORY)
 #undef X
@@ -778,13 +779,16 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_srvkm_cmd *cmd)
 		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
 		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
 
+		uint32_t mapping_table = -1;
+		memcpy_from_trace(pid, (__u64)din.mapping_table, &mapping_table, sizeof(mapping_table));
+
 		char annotation[2048] = {0};
 		memcpy_from_trace(pid, (__u64)din.annotation, annotation, i_min(din.annotation_size, sizeof(annotation) - 1));
 
-		printf("pvr_srv_physmem_new_ram_backed_pmr:\n size %lu mapping_table %p\n annotation %p \"%s\" size %u\n"
+		printf("pvr_srv_physmem_new_ram_backed_pmr:\n size 0x%" PRIX64 " mapping_table %p (%d)\n annotation %p \"%s\" size %u\n"
 			" log2_page_size %u phy_blocks %u virt_blocks %u pdump_flags %X pid %u flags %lX\n",
-			din.size,din.mapping_table,din.annotation, annotation,din.annotation_size,din.log2_page_size,
-			din.phy_blocks,din.virt_blocks,din.pdump_flags,din.pid,din.flags);
+			din.size,din.mapping_table, mapping_table, din.annotation, annotation, din.annotation_size, din.log2_page_size,
+			din.phy_blocks, din.virt_blocks, din.pdump_flags, din.pid, din.flags);
 		printf(" out: pmr %p error %d out_flags %lX\n",
 			dout.pmr, dout.error, dout.out_flags);
 	}
@@ -807,9 +811,9 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_srvkm_cmd *cmd)
 		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
 		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
 
-		printf("pvr_srv_devmem_int_reserve_range:\n address %p size %zu serverHeap %p flags %lX\n",
+		printf("pvr_srv_devmem_int_reserve_range:\n address %p size 0x%zX serverHeap %p flags %lX\n",
 			(void*)din.addr.addr,din.size,din.server_heap,din.flags);
-		printf(" out: reservation %p rrror %d\n",
+		printf(" out: reservation %p error %d\n",
 			dout.reservation, dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_DEVMEMINTRESERVERANGEANDMAPPMR)
@@ -820,7 +824,7 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_srvkm_cmd *cmd)
 		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
 		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
 
-		printf("DevmemIntReserveRangeAndMapPMR:\n address %p size %zu serverHeap %p pmr %p flags %lX\n",
+		printf("DevmemIntReserveRangeAndMapPMR:\n address %p size 0x%zX serverHeap %p pmr %p flags %lX\n",
 			(void*)din.sAddress.addr,din.uiLength,din.hDevmemServerHeap,din.hPMR,din.uiFlags);
 		printf(" out: reservation %p error %d\n",
 			dout.hReservation, dout.eError);
