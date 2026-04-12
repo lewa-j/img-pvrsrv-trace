@@ -12,6 +12,7 @@
 #include <linux/ptrace.h>
 #include <syscall.h>
 #include <string.h>
+#include <inttypes.h>
 #include <xf86drm.h>
 
 #define PACKED __attribute__((__packed__))
@@ -341,6 +342,53 @@ struct pvr_srv_bridge_connect_ret {
    uint8_t kernel_arch;
 } PACKED;
 
+struct pvr_srv_devmem_int_ctx_create_cmd {
+   bool kernel_memory_ctx;
+} PACKED;
+
+struct pvr_srv_devmem_int_ctx_create_ret {
+   void *server_memctx;
+   void *server_memctx_data;
+   enum pvr_srv_error error;
+   uint32_t cpu_cache_line_size;
+} PACKED;
+
+struct pvr_srv_heap_count_cmd {
+   uint32_t heap_config_index;
+} PACKED;
+
+struct pvr_srv_heap_count_ret {
+   enum pvr_srv_error error;
+   uint32_t heap_count;
+} PACKED;
+
+struct pvr_srv_heap_cfg_details_cmd {
+   char *buffer;
+   uint32_t heap_config_index;
+   uint32_t heap_index;
+   uint32_t buffer_size;
+} PACKED;
+
+struct pvr_srv_heap_cfg_details_ret {
+   pvr_dev_addr_t base_addr;
+   uint64_t size;
+   uint64_t reserved_size;
+   char *buffer;
+   enum pvr_srv_error error;
+   uint32_t log2_page_size;
+   uint32_t log2_alignment;
+} PACKED;
+
+struct pvr_srv_devmem_int_heap_create_cmd {
+   void *server_memctx;
+   uint32_t heap_config_index;
+   uint32_t heap_index;
+} PACKED;
+
+struct pvr_srv_devmem_int_heap_create_ret {
+   void *server_heap;
+   enum pvr_srv_error error;
+} PACKED;
 
 struct pvr_srv_physmem_new_ram_backed_pmr_cmd {
    uint64_t size;
@@ -670,6 +718,57 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_srvkm_cmd *cmd)
 			din.build_options, din.DDK_build, din.DDK_version, din.flags);
 		printf(" out: bvnc %lX error %d capability_flags %X kernel_arch %X\n",
 			dout.bvnc, dout.error, dout.capability_flags, dout.kernel_arch);
+	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_DEVMEMINTCTXCREATE)
+	{
+		struct pvr_srv_devmem_int_ctx_create_cmd din = {0};
+		struct pvr_srv_devmem_int_ctx_create_ret dout = {0};
+		VALIDATE_SIZES(pvr_srv_devmem_int_ctx_create);
+		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
+		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
+
+		printf("pvr_srv_devmem_int_ctx_create: kernel_memory_ctx %d\n", din.kernel_memory_ctx);
+		printf(" out: server_memctx %p data %p error %d cpu_cache_line_size %d\n",
+			dout.server_memctx, dout.server_memctx_data, dout.error, dout.cpu_cache_line_size);
+	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_HEAPCFGHEAPCOUNT)
+	{
+		struct pvr_srv_heap_count_cmd din = {0};
+		struct pvr_srv_heap_count_ret dout = {0};
+		VALIDATE_SIZES(pvr_srv_heap_count);
+		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
+		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
+
+		printf("pvr_srv_heap_count: heap_config_index %d\n", din.heap_config_index);
+		printf(" out: heap_count %d\n", dout.heap_count);
+	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_HEAPCFGHEAPDETAILS)
+	{
+		struct pvr_srv_heap_cfg_details_cmd din = {0};
+		struct pvr_srv_heap_cfg_details_ret dout = {0};
+		VALIDATE_SIZES(pvr_srv_heap_cfg_details);
+		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
+		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
+
+		char name[2048] = {0};
+		memcpy_from_trace(pid, (__u64)din.buffer, name, i_min(din.buffer_size, sizeof(name) - 1));
+
+		printf("pvr_srv_heap_cfg_details:\n buffer %p \"%s\" heap_config_index %d heap_index %d buffer_size %d\n",
+			din.buffer, name, din.heap_config_index, din.heap_index, din.buffer_size);
+		printf(" out: base_addr %p size 0x%" PRIX64 " reserved_size 0x%" PRIX64 " buffer %p error %d log2_page_size %d log2_alignment %d\n",
+			(void*)dout.base_addr.addr, dout.size, dout.reserved_size, dout.buffer, dout.error, dout.log2_page_size, dout.log2_alignment);
+	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_DEVMEMINTHEAPCREATE)
+	{
+		struct pvr_srv_devmem_int_heap_create_cmd din = {0};
+		struct pvr_srv_devmem_int_heap_create_ret dout = {0};
+		VALIDATE_SIZES(pvr_srv_devmem_int_heap_create);
+		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
+		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
+
+		printf("pvr_srv_devmem_int_heap_create: server_memctx %p heap_config_index %d heap_index %d\n",
+			din.server_memctx, din.heap_config_index, din.heap_index);
+		printf(" out: server_heap %p error %d\n", dout.server_heap, dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_PHYSMEMNEWRAMBACKEDPMR)
 	{
