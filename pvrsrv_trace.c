@@ -437,17 +437,47 @@ struct pvr_srv_devmem_int_reserve_range_ret {
 
 struct PVRSRV_BRIDGE_IN_DEVMEMINTRESERVERANGEANDMAPPMR
 {
-	pvr_dev_addr_t sAddress;
-	size_t uiLength;
-	void *hDevmemServerHeap;
-	void *hPMR;
-	uint64_t uiFlags;
+	pvr_dev_addr_t address;
+	size_t length;
+	pvr_handle_t server_heap;
+	pvr_handle_t pmr;
+	uint64_t flags;
 } PACKED;
 
 struct PVRSRV_BRIDGE_OUT_DEVMEMINTRESERVERANGEANDMAPPMR
 {
-	void *hReservation;
-	enum pvr_srv_error eError;
+	pvr_handle_t reservation;
+	enum pvr_srv_error error;
+} PACKED;
+
+/* DevmemXIntReserveRange */
+struct PVRSRV_BRIDGE_IN_DEVMEMXINTRESERVERANGE
+{
+	pvr_dev_addr_t address;
+	size_t length;
+	pvr_handle_t server_heap;
+} PACKED;
+
+struct PVRSRV_BRIDGE_OUT_DEVMEMXINTRESERVERANGE
+{
+	pvr_handle_t reservation;
+	enum pvr_srv_error error;
+} PACKED;
+
+/* DevmemXIntMapPages */
+struct PVRSRV_BRIDGE_IN_DEVMEMXINTMAPPAGES
+{
+	pvr_handle_t pmr;
+	pvr_handle_t reservation;
+	uint32_t page_count;
+	uint32_t phys_page_offset;
+	uint32_t virt_page_offset;
+	uint64_t flags;
+} PACKED;
+
+struct PVRSRV_BRIDGE_OUT_DEVMEMXINTMAPPAGES
+{
+	enum pvr_srv_error error;
 } PACKED;
 
 
@@ -826,9 +856,33 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_srvkm_cmd *cmd)
 		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
 
 		printf("DevmemIntReserveRangeAndMapPMR:\n address %p size 0x%zX serverHeap %p pmr %p flags %lX\n",
-			(void*)din.sAddress.addr,din.uiLength,din.hDevmemServerHeap,din.hPMR,din.uiFlags);
+			(void*)din.address.addr,din.length,din.server_heap,din.pmr,din.flags);
 		printf(" out: reservation %p error %d\n",
-			dout.hReservation, dout.eError);
+			dout.reservation, dout.error);
+	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_DEVMEMXINTRESERVERANGE)
+	{
+		struct PVRSRV_BRIDGE_IN_DEVMEMXINTRESERVERANGE din = {0};
+		struct PVRSRV_BRIDGE_OUT_DEVMEMXINTRESERVERANGE dout = {0};
+		VALIDATE_SIZES(DevmemXIntReserveRange);
+		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
+		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
+
+		printf("DevmemXIntReserveRange: address %p length 0x%zX serverHeap %p\n",
+			(void*)din.address.addr, din.length, din.server_heap);
+		printf(" out: reservation %p error %d\n", dout.reservation, dout.error);
+	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_DEVMEMXINTMAPPAGES)
+	{
+		struct PVRSRV_BRIDGE_IN_DEVMEMXINTMAPPAGES din = {0};
+		struct PVRSRV_BRIDGE_OUT_DEVMEMXINTMAPPAGES dout = {0};
+		VALIDATE_SIZES(DevmemXIntMapPages);
+		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
+		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
+
+		printf("DevmemXIntMapPages:\n pmr %p reservation %p page_count %d phys_page_offset %d virt_page_offset %d flags %lX\n",
+			din.pmr, din.reservation, din.page_count, din.phys_page_offset, din.virt_page_offset, din.flags);
+		printf(" out: error %d\n", dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_RGXTA3D && cmd->bridge_func_id == PVR_SRV_BRIDGE_RGXTA3D_RGXCREATEHWRTDATASET)
 	{
