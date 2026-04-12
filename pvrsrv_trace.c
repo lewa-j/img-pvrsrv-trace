@@ -43,6 +43,8 @@ struct drm_srvkm_sw_timeline_advance_data {
 
 #define PVR_SRVKM_SERVICES_INIT 1U
 #define PVR_SRVKM_SYNC_INIT 2U
+#define PVR_SRVKM_SYNC_EXP_FENCE_INIT 3U
+#define PVR_SRVKM_SERVICES_PAGE_MIGRATE_INIT 4U
 /* Ioctl to initialize a module. */
 struct drm_srvkm_init_data {
    uint32_t init_module;
@@ -614,7 +616,19 @@ void print_pvrsrv_init(int pid, __u64 src)
 	struct drm_srvkm_init_data data = {0};
 	memcpy_from_trace(pid, src, &data, sizeof(data));
 	
-	printf("drm_srvkm_init: %u\n", data.init_module);
+	printf("drm_srvkm_init: %u (", data.init_module);
+
+	switch (data.init_module)
+	{
+#define X(name) case PVR_SRVKM_##name: printf( #name ")\n"); break;
+		X(SERVICES_INIT)
+		X(SYNC_INIT)
+		X(SYNC_EXP_FENCE_INIT)
+		X(SERVICES_PAGE_MIGRATE_INIT)
+#undef X
+		default:
+		printf("unknown)\n");
+	}
 }
 
 static void dump_hex(char *data, int size)
