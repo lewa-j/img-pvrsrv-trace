@@ -948,6 +948,7 @@ void print_syscall(struct ptrace_syscall_info *sci, struct ptrace_syscall_info *
 			print_drm_version(pid, sci->entry.args[2]);
 		break;
 		case DRM_IOCTL_PVR_SRVKM_INIT:
+		case DRM_IOCTL_SRVKM_INIT:
 			print_pvrsrv_init(pid, sci->entry.args[2]);
 			break;
 		case DRM_IOCTL_SRVKM_CMD:
