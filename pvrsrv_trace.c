@@ -1038,7 +1038,8 @@ void print_pvrsrv_cmd(int pid, __u64 src)
 
 void print_syscall(struct ptrace_syscall_info *sci, struct ptrace_syscall_info *sci_exit, int pid, const char *open_path)
 {
-	if (!(sci->entry.nr == SYS_openat || sci->entry.nr == SYS_close || sci->entry.nr == SYS_ioctl))
+	if (!(sci->entry.nr == SYS_openat || sci->entry.nr == SYS_close || sci->entry.nr == SYS_ioctl
+		 || sci->entry.nr == SYS_mmap  || sci->entry.nr == SYS_munmap))
 		return;
 
 	if (sci->entry.nr == SYS_openat && sci_exit->exit.is_error)
@@ -1058,6 +1059,17 @@ void print_syscall(struct ptrace_syscall_info *sci, struct ptrace_syscall_info *
 	else if (sci->entry.nr == SYS_close)
 	{
 		printf(" close(%lld)", sci->entry.args[0]);
+	}
+	else if (sci->entry.nr == SYS_mmap)
+	{
+		//TODO: PROT_READ|PROT_WRITE, MAP_SHARED
+		printf(" mmap(0x%llX, %lld, 0x%llX, 0x%llX, %lld, 0x%llX)",
+			sci->entry.args[0], sci->entry.args[1], sci->entry.args[2],
+			sci->entry.args[3], sci->entry.args[4], sci->entry.args[5]);
+	}
+	else if (sci->entry.nr == SYS_munmap)
+	{
+		printf(" munmap(0x%llX, %lld)", sci->entry.args[0], sci->entry.args[1]);
 	}
 	else if (sci->entry.nr == SYS_ioctl)
 	{
