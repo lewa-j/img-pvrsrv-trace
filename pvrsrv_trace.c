@@ -482,6 +482,32 @@ struct PVRSRV_BRIDGE_OUT_DEVMEMXINTMAPPAGES
 } PACKED;
 
 
+struct pvr_srv_rgx_submit_transfer2_cmd {
+   pvr_handle_t transfer_context;
+   uint32_t *client_update_count;
+   uint32_t *cmd_size;
+   uint32_t *sync_pmr_flags;
+   uint32_t *tq_prepare_flags;
+   uint32_t **update_sync_offset;
+   uint32_t **update_value;
+   uint8_t **fw_command;
+   char *update_fence_name;
+   void **sync_pmrs;
+   void ***update_ufo_sync_prim_block;
+   int32_t update_timeline_2d;
+   int32_t update_timeline_3d;
+   int32_t check_fence;
+   uint32_t ext_job_ref;
+   uint32_t prepare_count;
+   uint32_t sync_pmr_count;
+} PACKED;
+
+struct pvr_srv_rgx_submit_transfer2_ret {
+   enum pvr_srv_error error;
+   int32_t update_fence_2d;
+   int32_t update_fence_3d;
+} PACKED;
+
 struct pvr_srv_rgx_create_free_list_cmd {
    pvr_handle_t free_list_reservation;
    pvr_handle_t mem_ctx_priv_data;
@@ -884,6 +910,27 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_srvkm_cmd *cmd)
 		printf("DevmemXIntMapPages:\n pmr %p reservation %p page_count %d phys_page_offset %d virt_page_offset %d flags %lX\n",
 			din.pmr, din.reservation, din.page_count, din.phys_page_offset, din.virt_page_offset, din.flags);
 		printf(" out: error %d\n", dout.error);
+	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_RGXTQ && cmd->bridge_func_id == PVR_SRV_BRIDGE_RGXTQ_RGXSUBMITTRANSFER2)
+	{
+		struct pvr_srv_rgx_submit_transfer2_cmd din = {0};
+		struct pvr_srv_rgx_submit_transfer2_ret dout = {0};
+		VALIDATE_SIZES(pvr_srv_rgx_submit_transfer2);
+		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
+		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
+
+		printf("pvr_srv_rgx_submit_transfer2:\n transfer_context %p client_update_count %p cmd_size %p sync_pmr_flags %p\n"
+			" tq_prepare_flags %p update_sync_offset %p update_value %p fw_command %p\n"
+			" update_fence_name %p sync_pmrs %p update_ufo_sync_prim_block %p\n"
+			" update_timeline_2d %d update_timeline_3d %d check_fence %d\n"
+			" ext_job_ref %u prepare_count %u sync_pmr_count %u\n",
+			din.transfer_context, din.client_update_count, din.cmd_size, din.sync_pmr_flags,
+			din.tq_prepare_flags, din.update_sync_offset, din.update_value, din.fw_command,
+			din.update_fence_name, din.sync_pmrs, din.update_ufo_sync_prim_block,
+			din.update_timeline_2d, din.update_timeline_3d, din.check_fence,
+			din.ext_job_ref, din.prepare_count, din.sync_pmr_count);
+		printf(" out: error %d update_fence_2d %d update_fence_3d %d\n",
+			dout.error, dout.update_fence_2d, dout.update_fence_3d);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_RGXTA3D && cmd->bridge_func_id == PVR_SRV_BRIDGE_RGXTA3D_RGXCREATEHWRTDATASET)
 	{
