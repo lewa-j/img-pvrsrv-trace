@@ -50,7 +50,9 @@
 #define PVR_SRV_BRIDGE_MM_DEVMEMINTRESERVERANGE 15UL
 #define PVR_SRV_BRIDGE_MM_DEVMEMINTRESERVERANGEANDMAPPMR 16UL
 #define PVR_SRV_BRIDGE_MM_DEVMEMINTUNRESERVERANGE 17UL
+#define PVR_SRV_BRIDGE_MM_HEAPCFGHEAPCONFIGCOUNT 21UL
 #define PVR_SRV_BRIDGE_MM_HEAPCFGHEAPCOUNT 22UL
+#define PVR_SRV_BRIDGE_MM_HEAPCFGHEAPCONFIGNAME 23UL
 #define PVR_SRV_BRIDGE_MM_HEAPCFGHEAPDETAILS 24UL
 #define PVR_SRV_BRIDGE_MM_PHYSHEAPGETMEMINFO 26UL
 #define PVR_SRV_BRIDGE_MM_DEVMEMXINTRESERVERANGE 30UL
@@ -184,6 +186,13 @@ struct pvr_srv_devmem_int_ctx_destroy_ret
 } PACKED;
 
 
+struct pvr_srv_heap_cfg_count_ret
+{
+	enum pvr_srv_error error;
+	uint32_t heap_config_count;
+} PACKED;
+
+
 struct pvr_srv_heap_count_cmd
 {
 	uint32_t heap_config_index;
@@ -194,6 +203,21 @@ struct pvr_srv_heap_count_ret
 	enum pvr_srv_error error;
 	uint32_t heap_count;
 } PACKED;
+
+
+struct pvr_srv_heap_cfg_name_cmd
+{
+	char *config_name_buffer;
+	uint32_t heap_config_index;
+	uint32_t config_name_bufer_size;
+} PACKED;
+
+struct pvr_srv_heap_cfg_name_ret
+{
+	char *heap_config_name;
+	enum pvr_srv_error error;
+} PACKED;
+
 
 struct pvr_srv_heap_cfg_details_cmd
 {

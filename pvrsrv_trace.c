@@ -384,6 +384,13 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 		printf("pvr_srv_devmem_int_ctx_destroy: server_memctx %p\n", din.server_memctx);
 		printf(" out: error %d \n", dout.error);
 	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_HEAPCFGHEAPCONFIGCOUNT)
+	{
+		struct pvr_srv_heap_cfg_count_ret dout = {0};
+		VALIDATE_OUT_SIZE(pvr_srv_heap_cfg_count);
+		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
+		printf("pvr_srv_heap_cfg_count: error %d heap_config_count %d\n", dout.error, dout.heap_config_count);
+	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_HEAPCFGHEAPCOUNT)
 	{
 		struct pvr_srv_heap_count_cmd din = {0};
@@ -393,7 +400,22 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
 
 		printf("pvr_srv_heap_count: heap_config_index %d\n", din.heap_config_index);
-		printf(" out: heap_count %d\n", dout.heap_count);
+		printf(" out: error %d heap_count %d\n", dout.error, dout.heap_count);
+	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_HEAPCFGHEAPCONFIGNAME)
+	{
+		struct pvr_srv_heap_cfg_name_cmd din = {0};
+		struct pvr_srv_heap_cfg_name_ret dout = {0};
+		VALIDATE_SIZES(pvr_srv_heap_cfg_name);
+		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
+		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
+
+		char name[256] = {0};
+		memcpy_from_trace(pid, (__u64)din.config_name_buffer, name, i_min(din.config_name_bufer_size, sizeof(name) - 1));
+
+		printf("pvr_srv_heap_cfg_name: buffer %p \"%s\" heap_config_index %d buffer_size %d\n",
+			din.config_name_buffer, name, din.heap_config_index, din.config_name_bufer_size);
+		printf(" out: buffer %p error %d\n", dout.heap_config_name, dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_HEAPCFGHEAPDETAILS)
 	{
@@ -403,10 +425,10 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
 		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
 
-		char name[2048] = {0};
+		char name[256] = {0};
 		memcpy_from_trace(pid, (__u64)din.buffer, name, i_min(din.buffer_size, sizeof(name) - 1));
 
-		printf("pvr_srv_heap_cfg_details:\n buffer %p \"%s\" heap_config_index %d heap_index %d buffer_size %d\n",
+		printf("pvr_srv_heap_cfg_details: buffer %p \"%s\" heap_config_index %d heap_index %d buffer_size %d\n",
 			din.buffer, name, din.heap_config_index, din.heap_index, din.buffer_size);
 		printf(" out: base_addr %p size 0x%" PRIX64 " reserved_size 0x%" PRIX64 " buffer %p error %d log2_page_size %d log2_alignment %d\n",
 			(void*)dout.base_addr.addr, dout.size, dout.reserved_size, dout.buffer, dout.error, dout.log2_page_size, dout.log2_alignment);
