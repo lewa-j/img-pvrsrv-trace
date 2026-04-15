@@ -311,6 +311,39 @@ struct pvr_srv_heap_cfg_details_ret
 	uint32_t log2_alignment;
 } PACKED;
 
+
+enum pvr_phys_heap
+{
+	PVR_SRV_PHYS_HEAP_FORCE_I32 = 0x7fffffff
+};
+
+enum pvr_phys_heap_type
+{
+	PVR_SRV_PHYS_HEAP_TYPE_UNKNOWN
+};
+
+struct pvr_phys_heap_mem_stats
+{
+	uint64_t total_size;
+	uint64_t free_size;
+	uint32_t phys_heap_flags;
+	enum pvr_phys_heap_type phys_heap_type;
+};
+
+struct pvr_srv_physheap_getmeminfo_cmd
+{
+	struct pvr_phys_heap_mem_stats *phys_heap_mem_stats;
+	enum pvr_phys_heap *phys_heap_id;
+	uint32_t phys_heap_count;
+} PACKED;
+
+struct pvr_srv_physheap_getmeminfo_ret
+{
+	struct pvr_phys_heap_mem_stats *phys_heap_mem_stats;
+	enum pvr_srv_error error;
+} PACKED;
+
+
 struct pvr_srv_devmem_int_heap_create_cmd
 {
 	pvr_handle_t server_memctx;

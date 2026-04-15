@@ -590,6 +590,32 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 		printf(" out: reservation %p error %d\n",
 			dout.reservation, dout.error);
 	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_PHYSHEAPGETMEMINFO)
+	{
+		struct pvr_srv_physheap_getmeminfo_cmd din = {0};
+		struct pvr_srv_physheap_getmeminfo_ret dout = {0};
+		VALIDATE_SIZES(pvr_srv_physheap_getmeminfo);
+		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
+		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
+
+		printf("pvr_srv_physheap_getmeminfo: phys_heap_mem_stats %p phys_heap_id %p phys_heap_count %d\n",
+			din.phys_heap_mem_stats, din.phys_heap_id, din.phys_heap_count);
+		printf(" out: phys_heap_mem_stats %p error %d\n", dout.phys_heap_mem_stats, dout.error);
+
+		enum pvr_phys_heap heap_ids[16] = {0};
+		struct pvr_phys_heap_mem_stats mem_stats[16] = {0};
+		if (din.phys_heap_count)
+		{
+			memcpy_from_trace(pid, (__u64)din.phys_heap_id, &heap_ids, i_min(din.phys_heap_count * sizeof(enum pvr_phys_heap), sizeof(heap_ids)));
+			memcpy_from_trace(pid, (__u64)din.phys_heap_mem_stats, &mem_stats,
+				i_min(din.phys_heap_count * sizeof(struct pvr_phys_heap_mem_stats), sizeof(mem_stats)));
+		}
+		for (uint32_t i = 0; i < i_min(16, din.phys_heap_count); i++)
+		{
+			printf("  %u: id 0x%X: size 0x%lX free_size 0x%lX flags 0x%X type 0x%X\n", i, heap_ids[i],
+				mem_stats[i].total_size, mem_stats[i].free_size, mem_stats[i].phys_heap_flags, mem_stats[i].phys_heap_type);
+		}
+	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_DEVMEMXINTRESERVERANGE)
 	{
 		struct pvr_srv_devmem_x_int_reserve_range_cmd din = {0};
