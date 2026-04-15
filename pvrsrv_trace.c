@@ -345,6 +345,17 @@ struct pvr_srv_bridge_connect_ret {
    uint8_t kernel_arch;
 } PACKED;
 
+struct pvr_srv_bridge_getmulticoreinfo_cmd {
+   uint64_t *caps;
+   uint32_t caps_size;
+} PACKED;
+
+struct pvr_srv_bridge_getmulticoreinfo_ret {
+   uint64_t *caps;
+   enum pvr_srv_error error;
+   uint32_t num_cores;
+} PACKED;
+
 struct pvr_srv_devmem_int_ctx_create_cmd {
    bool kernel_memory_ctx;
 } PACKED;
@@ -769,7 +780,7 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_srvkm_cmd *cmd)
 	{
 		struct pvr_srv_bridge_connect_cmd din = {0};
 		struct pvr_srv_bridge_connect_ret dout = {0};
-		VALIDATE_SIZES(pvr_srv_bridge_connect_pmr);
+		VALIDATE_SIZES(pvr_srv_bridge_connect);
 		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
 		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
 		
@@ -777,6 +788,19 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_srvkm_cmd *cmd)
 			din.build_options, din.DDK_build, din.DDK_version, din.flags);
 		printf(" out: bvnc %lX error %d capability_flags %X kernel_arch %X\n",
 			dout.bvnc, dout.error, dout.capability_flags, dout.kernel_arch);
+	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SRVCORE && cmd->bridge_func_id == PVR_SRV_BRIDGE_SRVCORE_GETMULTICOREINFO)
+	{
+		struct pvr_srv_bridge_getmulticoreinfo_cmd din = {0};
+		struct pvr_srv_bridge_getmulticoreinfo_ret dout = {0};
+		VALIDATE_SIZES(pvr_srv_bridge_getmulticoreinfo);
+		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
+		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
+		
+		printf("pvr_srv_bridge_getmulticoreinfo: caps %p caps_size %d\n",
+			din.caps, din.caps_size);
+		printf(" out: caps %p error %d num_cores %d\n",
+			dout.caps, dout.error, dout.num_cores);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_DEVMEMINTCTXCREATE)
 	{
