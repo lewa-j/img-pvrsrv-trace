@@ -1,4 +1,4 @@
-//lewa_j 2025
+//lewa_j 2025-2026
 //Attempt to debug vulkan driver 24.2@6603887 on OrangePi RV2 with PowerVR B-Series BXE-2-32 MC1
 //Using bits and pieces from mesa imagination driver and https://github.com/orangepi-xunlong/linux-orangepi/tree/orange-pi-6.6-ky/drivers/gpu/drm/img-rogue
 
@@ -15,149 +15,14 @@
 #include <inttypes.h>
 #include <xf86drm.h>
 
-#define PACKED __attribute__((__packed__))
+#define SUPPORT_LINUX_OSPAGE_MIGRATION
+#include "pvr_drm.h"
+#include "pvr_srv_bridge.h"
 
-/* Ioctl to pass cmd and ret structures. */
-struct drm_srvkm_cmd {
-   uint32_t bridge_id;
-   uint32_t bridge_func_id;
-   uint64_t in_data_ptr;
-   uint64_t out_data_ptr;
-   uint32_t in_data_size;
-   uint32_t out_data_size;
-};
-
-struct pvr_sync_rename_ioctl_data {
-	char szName[32];
-};
-
-struct drm_srvkm_sw_sync_create_fence_data {
-   char name[32];
-   __s32 fence;
-   __u32 pad;
-   __u64 sync_pt_idx;
-};
-
-struct drm_srvkm_sw_timeline_advance_data {
-   __u64 sync_pt_idx;
-};
-
-#define PVR_SRVKM_SERVICES_INIT 1U
-#define PVR_SRVKM_SYNC_INIT 2U
-#define PVR_SRVKM_SYNC_EXP_FENCE_INIT 3U
-#define PVR_SRVKM_SERVICES_PAGE_MIGRATE_INIT 4U
-/* Ioctl to initialize a module. */
-struct drm_srvkm_init_data {
-   uint32_t init_module;
-};
-
-#define DRM_SRVKM_CMD 0U /* PVR Services command. */
-/* PVR Sync commands */
-#define DRM_SRVKM_SYNC_RENAME_CMD 1U
-#define DRM_SRVKM_SYNC_FORCE_SW_ONLY_CMD 2U
-/* PVR Software Sync commands */
-#define DRM_SRVKM_SW_SYNC_CREATE_FENCE_CMD 3U
-#define DRM_SRVKM_SW_SYNC_INC_CMD 4U
-
-#define DRM_SRVKM_INIT 5U /* PVR Services Render Device Init command. */
-
-#define DRM_IOCTL_SRVKM_CMD \
-   DRM_IOWR(DRM_COMMAND_BASE + DRM_SRVKM_CMD, struct drm_srvkm_cmd)
-
-#define DRM_IOCTL_SRVKM_SYNC_RENAME_CMD \
-	DRM_IOW(DRM_COMMAND_BASE + DRM_SRVKM_SYNC_RENAME_CMD, \
-		struct pvr_sync_rename_ioctl_data)
-#define DRM_IOCTL_SRVKM_SYNC_FORCE_SW_ONLY_CMD \
-   DRM_IO(DRM_COMMAND_BASE + DRM_SRVKM_SYNC_FORCE_SW_ONLY_CMD)
-
-#define DRM_IOCTL_SRVKM_SW_SYNC_CREATE_FENCE_CMD                   \
-   DRM_IOWR(DRM_COMMAND_BASE + DRM_SRVKM_SW_SYNC_CREATE_FENCE_CMD, \
-            struct drm_srvkm_sw_sync_create_fence_data)
-#define DRM_IOCTL_SRVKM_SW_SYNC_INC_CMD                  \
-   DRM_IOR(DRM_COMMAND_BASE + DRM_SRVKM_SW_SYNC_INC_CMD, \
-           struct drm_srvkm_sw_timeline_advance_data)
-
+// mesa version is IOWR, but DRM_IOCTL_PVR_SRVKM_INIT is IOW. recognize both
 #define DRM_IOCTL_SRVKM_INIT \
-   DRM_IOWR(DRM_COMMAND_BASE + DRM_SRVKM_INIT, struct drm_srvkm_init_data)
+	DRM_IOWR(DRM_COMMAND_BASE + DRM_PVR_SRVKM_INIT, struct drm_pvr_srvkm_init_data)
 
-//
-//same as DRM_IOCTL_SRVKM_INIT but IOW not IOWR
-#define DRM_IOCTL_PVR_SRVKM_INIT \
-	DRM_IOW(DRM_COMMAND_BASE + DRM_SRVKM_INIT, \
-		struct drm_srvkm_init_data)
-
-//
-#define PVR_SRV_BRIDGE_SRVCORE 1UL
-
-#define PVR_SRV_BRIDGE_SRVCORE_CONNECT 0UL
-#define PVR_SRV_BRIDGE_SRVCORE_DISCONNECT 1UL
-#define PVR_SRV_BRIDGE_SRVCORE_ACQUIREGLOBALEVENTOBJECT 2UL
-#define PVR_SRV_BRIDGE_SRVCORE_RELEASEGLOBALEVENTOBJECT 3UL
-#define PVR_SRV_BRIDGE_SRVCORE_EVENTOBJECTOPEN 4UL
-#define PVR_SRV_BRIDGE_SRVCORE_EVENTOBJECTCLOSE 6UL
-#define PVR_SRV_BRIDGE_SRVCORE_ALIGNMENTCHECK 10UL
-#define PVR_SRV_BRIDGE_SRVCORE_GETMULTICOREINFO 12UL
-#define PVR_SRV_BRIDGE_SRVCORE_ACQUIREINFOPAGE 15UL
-#define PVR_SRV_BRIDGE_SRVCORE_RELEASEINFOPAGE 16UL
-
-
-#define PVR_SRV_BRIDGE_SYNC 2UL
-
-#define PVR_SRV_BRIDGE_SYNC_ALLOCSYNCPRIMITIVEBLOCK 0UL
-#define PVR_SRV_BRIDGE_SYNC_FREESYNCPRIMITIVEBLOCK 1UL
-#define PVR_SRV_BRIDGE_SYNC_SYNCPRIMSET 2UL
-#define PVR_SRV_BRIDGE_SYNC_SYNCALLOCEVENT 7UL
-#define PVR_SRV_BRIDGE_SYNC_SYNCFREEEVENT 8UL
-
-#define PVR_SRV_BRIDGE_MM 6UL
-
-#define PVR_SRV_BRIDGE_MM_PMRMAKELOCALIMPORTHANDLE 3UL
-#define PVR_SRV_BRIDGE_MM_PMRUNMAKELOCALIMPORTHANDLE 4UL
-#define PVR_SRV_BRIDGE_MM_PMRLOCALIMPORTPMR	6UL
-#define PVR_SRV_BRIDGE_MM_PMRUNREFPMR 7UL
-#define PVR_SRV_BRIDGE_MM_PHYSMEMNEWRAMBACKEDPMR 8UL
-#define PVR_SRV_BRIDGE_MM_DEVMEMINTCTXCREATE 9UL
-#define PVR_SRV_BRIDGE_MM_DEVMEMINTCTXDESTROY 10UL
-#define PVR_SRV_BRIDGE_MM_DEVMEMINTHEAPCREATE 11UL
-#define PVR_SRV_BRIDGE_MM_DEVMEMINTHEAPDESTROY 12UL
-#define PVR_SRV_BRIDGE_MM_DEVMEMINTMAPPMR 13UL
-#define PVR_SRV_BRIDGE_MM_DEVMEMINTUNMAPPMR 14UL
-#define PVR_SRV_BRIDGE_MM_DEVMEMINTRESERVERANGE 15UL
-#define PVR_SRV_BRIDGE_MM_DEVMEMINTRESERVERANGEANDMAPPMR 16UL
-#define PVR_SRV_BRIDGE_MM_DEVMEMINTUNRESERVERANGE 17UL
-#define PVR_SRV_BRIDGE_MM_HEAPCFGHEAPCOUNT 22UL
-#define PVR_SRV_BRIDGE_MM_HEAPCFGHEAPDETAILS 24UL
-#define PVR_SRV_BRIDGE_MM_PHYSHEAPGETMEMINFO 26UL
-#define PVR_SRV_BRIDGE_MM_DEVMEMXINTRESERVERANGE 30UL
-#define PVR_SRV_BRIDGE_MM_DEVMEMXINTUNRESERVERANGE 31UL
-#define PVR_SRV_BRIDGE_MM_DEVMEMXINTMAPPAGES 32UL
-#define PVR_SRV_BRIDGE_MM_DEVMEMXINTUNMAPPAGES 33UL
-#define PVR_SRV_BRIDGE_MM_DEVMEMXINTMAPVRANGETOBACKINGPAGE 34UL
-
-#define PVR_SRV_BRIDGE_RGXTQ 128UL
-
-#define PVR_SRV_BRIDGE_RGXTQ_RGXCREATETRANSFERCONTEXT 0UL
-#define PVR_SRV_BRIDGE_RGXTQ_RGXDESTROYTRANSFERCONTEXT 1UL
-#define PVR_SRV_BRIDGE_RGXTQ_RGXSUBMITTRANSFER2 3UL
-#define PVR_SRV_BRIDGE_RGXTQ_RGXTQGETSHAREDMEMORY 4UL
-#define PVR_SRV_BRIDGE_RGXTQ_RGXTQRELEASESHAREDMEMORY 5UL
-
-#define PVR_SRV_BRIDGE_RGXCMP 129UL
-
-#define PVR_SRV_BRIDGE_RGXCMP_RGXCREATECOMPUTECONTEXT 0UL
-#define PVR_SRV_BRIDGE_RGXCMP_RGXDESTROYCOMPUTECONTEXT 1UL
-
-#define PVR_SRV_BRIDGE_RGXTA3D 130UL
-
-#define PVR_SRV_BRIDGE_RGXTA3D_RGXDESTROYHWRTDATASET 0UL
-#define PVR_SRV_BRIDGE_RGXTA3D_RGXCREATEZSBUFFER 1UL
-#define PVR_SRV_BRIDGE_RGXTA3D_RGXDESTROYZSBUFFER 2UL
-#define PVR_SRV_BRIDGE_RGXTA3D_RGXDESTROYFREELIST 5UL
-#define PVR_SRV_BRIDGE_RGXTA3D_RGXDESTROYRENDERCONTEXT 6UL
-#define PVR_SRV_BRIDGE_RGXTA3D_RGXKICKTA3D2 10UL
-#define PVR_SRV_BRIDGE_RGXTA3D_RGXCREATEHWRTDATASET 12UL
-#define PVR_SRV_BRIDGE_RGXTA3D_RGXCREATEFREELIST 13UL
-#define PVR_SRV_BRIDGE_RGXTA3D_RGXCREATERENDERCONTEXT 14UL
 
 const char *srv_bridge_id_to_str(int b)
 {
@@ -296,344 +161,17 @@ const char *drm_ioctl_to_str(int c)
 	{
 #define X(name) case DRM_IOCTL_##name: return #name;
 		X(VERSION)
-		X(SRVKM_CMD)
-		X(SRVKM_SYNC_RENAME_CMD)
-		X(SRVKM_SYNC_FORCE_SW_ONLY_CMD)
-		X(SRVKM_SW_SYNC_CREATE_FENCE_CMD)
-		X(SRVKM_SW_SYNC_INC_CMD)
-		X(SRVKM_INIT)
+		X(PVR_SRVKM_CMD)
+		X(PVR_SYNC_RENAME_CMD)
+		X(PVR_SYNC_FORCE_SW_ONLY_CMD)
+		X(PVR_SW_SYNC_CREATE_FENCE_CMD)
+		X(PVR_SW_SYNC_INC_CMD)
 		X(PVR_SRVKM_INIT)
+		X(SRVKM_INIT)
 #undef X
 	}
 	return nullptr;
 }
-
-
-#define ROGUE_FWIF_NUM_RTDATAS 4U
-#define ROGUE_FWIF_NUM_GEOMDATAS 4U
-#define ROGUE_FWIF_NUM_RTDATA_FREELISTS 12U
-
-enum pvr_srv_error {
-   PVR_SRV_OK,
-   PVR_SRV_ERROR_RETRY = 25,
-   PVR_SRV_ERROR_DDK_VERSION_MISMATCH = 26,
-   PVR_SRV_ERROR_DDK_BUILD_MISMATCH = 27,
-   PVR_SRV_ERROR_BUILD_OPTIONS_MISMATCH = 28,
-   PVR_SRV_ERROR_BRIDGE_CALL_FAILED = 37,
-   PVR_SRV_ERROR_HANDLE_INDEX_OUT_OF_RANGE = 203,
-   PVR_SRV_ERROR_BRIDGE_ARRAY_SIZE_TOO_BIG = 350,
-   PVR_SRV_ERROR_FORCE_I32 = 0x7fffffff
-};
-
-typedef struct pvr_dev_addr {
-   uint64_t addr;
-} pvr_dev_addr_t;
-
-typedef void * pvr_handle_t;
-
-struct pvr_srv_bridge_connect_cmd {
-   uint32_t build_options;
-   uint32_t DDK_build;
-   uint32_t DDK_version;
-   uint32_t flags;
-} PACKED;
-
-struct pvr_srv_bridge_connect_ret {
-   uint64_t bvnc;
-   enum pvr_srv_error error;
-   uint32_t capability_flags;
-   uint8_t kernel_arch;
-} PACKED;
-
-struct pvr_srv_bridge_getmulticoreinfo_cmd {
-   uint64_t *caps;
-   uint32_t caps_size;
-} PACKED;
-
-struct pvr_srv_bridge_getmulticoreinfo_ret {
-   uint64_t *caps;
-   enum pvr_srv_error error;
-   uint32_t num_cores;
-} PACKED;
-
-struct pvr_srv_devmem_int_ctx_create_cmd {
-   bool kernel_memory_ctx;
-} PACKED;
-
-struct pvr_srv_devmem_int_ctx_create_ret {
-   pvr_handle_t server_memctx;
-   pvr_handle_t server_memctx_data;
-   enum pvr_srv_error error;
-   uint32_t cpu_cache_line_size;
-} PACKED;
-
-struct pvr_srv_heap_count_cmd {
-   uint32_t heap_config_index;
-} PACKED;
-
-struct pvr_srv_heap_count_ret {
-   enum pvr_srv_error error;
-   uint32_t heap_count;
-} PACKED;
-
-struct pvr_srv_heap_cfg_details_cmd {
-   char *buffer;
-   uint32_t heap_config_index;
-   uint32_t heap_index;
-   uint32_t buffer_size;
-} PACKED;
-
-struct pvr_srv_heap_cfg_details_ret {
-   pvr_dev_addr_t base_addr;
-   uint64_t size;
-   uint64_t reserved_size;
-   char *buffer;
-   enum pvr_srv_error error;
-   uint32_t log2_page_size;
-   uint32_t log2_alignment;
-} PACKED;
-
-struct pvr_srv_devmem_int_heap_create_cmd {
-   pvr_handle_t server_memctx;
-   uint32_t heap_config_index;
-   uint32_t heap_index;
-} PACKED;
-
-struct pvr_srv_devmem_int_heap_create_ret {
-   pvr_handle_t server_heap;
-   enum pvr_srv_error error;
-} PACKED;
-
-struct pvr_srv_physmem_new_ram_backed_pmr_cmd {
-   uint64_t size;
-   uint32_t *mapping_table;
-   const char *annotation;
-   uint32_t annotation_size;
-   uint32_t log2_page_size;
-   uint32_t phy_blocks;
-   uint32_t virt_blocks;
-   uint32_t pdump_flags;
-   uint32_t pid;
-   uint64_t flags;
-} PACKED;
-
-struct pvr_srv_physmem_new_ram_backed_pmr_ret {
-   pvr_handle_t pmr;
-   enum pvr_srv_error error;
-   uint64_t out_flags;
-} PACKED;
-
-
-struct pvr_srv_devmem_int_map_pmr_cmd {
-   pvr_handle_t pmr;
-   pvr_handle_t reservation;
-} PACKED;
-
-struct pvr_srv_devmem_int_map_pmr_ret {
-   enum pvr_srv_error error;
-} PACKED;
-
-
-struct pvr_srv_devmem_int_reserve_range_cmd {
-   pvr_dev_addr_t addr;
-   uint64_t size;
-   pvr_handle_t server_heap;
-   uint64_t flags;
-} PACKED;
-
-struct pvr_srv_devmem_int_reserve_range_ret {
-   pvr_handle_t reservation;
-   enum pvr_srv_error error;
-} PACKED;
-
-
-struct PVRSRV_BRIDGE_IN_DEVMEMINTRESERVERANGEANDMAPPMR
-{
-	pvr_dev_addr_t address;
-	size_t length;
-	pvr_handle_t server_heap;
-	pvr_handle_t pmr;
-	uint64_t flags;
-} PACKED;
-
-struct PVRSRV_BRIDGE_OUT_DEVMEMINTRESERVERANGEANDMAPPMR
-{
-	pvr_handle_t reservation;
-	enum pvr_srv_error error;
-} PACKED;
-
-/* DevmemXIntReserveRange */
-struct PVRSRV_BRIDGE_IN_DEVMEMXINTRESERVERANGE
-{
-	pvr_dev_addr_t address;
-	size_t length;
-	pvr_handle_t server_heap;
-} PACKED;
-
-struct PVRSRV_BRIDGE_OUT_DEVMEMXINTRESERVERANGE
-{
-	pvr_handle_t reservation;
-	enum pvr_srv_error error;
-} PACKED;
-
-/* DevmemXIntMapPages */
-struct PVRSRV_BRIDGE_IN_DEVMEMXINTMAPPAGES
-{
-	pvr_handle_t pmr;
-	pvr_handle_t reservation;
-	uint32_t page_count;
-	uint32_t phys_page_offset;
-	uint32_t virt_page_offset;
-	uint64_t flags;
-} PACKED;
-
-struct PVRSRV_BRIDGE_OUT_DEVMEMXINTMAPPAGES
-{
-	enum pvr_srv_error error;
-} PACKED;
-
-
-struct pvr_srv_rgx_submit_transfer2_cmd {
-   pvr_handle_t transfer_context;
-   uint32_t *client_update_count;
-   uint32_t *cmd_size;
-   uint32_t *sync_pmr_flags;
-   uint32_t *tq_prepare_flags;
-   uint32_t **update_sync_offset;
-   uint32_t **update_value;
-   uint8_t **fw_command;
-   char *update_fence_name;
-   void **sync_pmrs;
-   void ***update_ufo_sync_prim_block;
-   int32_t update_timeline_2d;
-   int32_t update_timeline_3d;
-   int32_t check_fence;
-   uint32_t ext_job_ref;
-   uint32_t prepare_count;
-   uint32_t sync_pmr_count;
-} PACKED;
-
-struct pvr_srv_rgx_submit_transfer2_ret {
-   enum pvr_srv_error error;
-   int32_t update_fence_2d;
-   int32_t update_fence_3d;
-} PACKED;
-
-struct pvr_srv_rgx_create_free_list_cmd {
-   pvr_handle_t free_list_reservation;
-   pvr_handle_t mem_ctx_priv_data;
-   pvr_handle_t global_free_list;
-   uint32_t grow_free_list_pages;
-   uint32_t grow_param_threshold;
-   uint32_t init_free_list_pages;
-   uint32_t max_free_list_pages;
-   bool free_list_check;
-} PACKED;
-
-struct pvr_srv_rgx_create_free_list_ret {
-   pvr_handle_t cleanup_cookie;
-   enum pvr_srv_error error;
-} PACKED;
-
-
-struct pvr_srv_rgx_create_hwrt_dataset_cmd {
-   uint64_t flipped_multi_sample_ctl;
-   uint64_t multi_sample_ctl;
-   /* ROGUE_FWIF_NUM_RTDATAS sized array. */
-   const pvr_dev_addr_t *macrotile_array_dev_addrs;
-   /* ROGUE_FWIF_NUM_RTDATAS sized array. */
-   const pvr_dev_addr_t *pm_mlist_dev_addrs;
-   /* ROGUE_FWIF_NUM_GEOMDATAS sized array. */
-   const pvr_dev_addr_t *rtc_dev_addrs;
-   /* ROGUE_FWIF_NUM_RTDATAS sized array. */
-   const pvr_dev_addr_t *rgn_header_dev_addrs;
-   /* ROGUE_FWIF_NUM_GEOMDATAS sized array. */
-   const pvr_dev_addr_t *tail_ptrs_dev_addrs;
-   /* ROGUE_FWIF_NUM_GEOMDATAS sized array. */
-   const pvr_dev_addr_t *vheap_table_dev_adds;
-   /* ROGUE_FWIF_NUM_RTDATAS sized array of handles. */
-   pvr_handle_t*hwrt_dataset;
-   /* ROGUE_FWIF_NUM_RTDATA_FREELISTS size array of handles. */
-   pvr_handle_t*free_lists;
-   uint32_t isp_merge_lower_x;
-   uint32_t isp_merge_lower_y;
-   uint32_t isp_merge_scale_x;
-   uint32_t isp_merge_scale_y;
-   uint32_t isp_merge_upper_x;
-   uint32_t isp_merge_upper_y;
-   uint32_t isp_mtile_size;
-   uint32_t mtile_stride;
-   uint32_t ppp_screen;
-   uint32_t rgn_header_size;
-   uint32_t te_aa;
-   uint32_t te_mtile1;
-   uint32_t te_mtile2;
-   uint32_t te_screen;
-   uint32_t tpc_size;
-   uint32_t tpc_stride;
-   uint16_t max_rts;
-}PACKED;
-
-struct pvr_srv_rgx_create_hwrt_dataset_ret {
-   /* ROGUE_FWIF_NUM_RTDATAS sized array of handles. */
-   pvr_handle_t*hwrt_dataset;
-   enum pvr_srv_error error;
-}PACKED;
-
-
-struct pvr_srv_rgx_kick_ta3d2_cmd {
-   uint64_t deadline;
-   pvr_handle_t hw_rt_dataset;
-   void *msaa_scratch_buffer;
-   void *pr_fence_ufo_sync_prim_block;
-   void *render_ctx;
-   void *zs_buffer;
-   uint32_t *client_3d_update_sync_offset;
-   uint32_t *client_3d_update_value;
-   uint32_t *client_ta_fence_sync_offset;
-   uint32_t *client_ta_fence_value;
-   uint32_t *client_ta_update_sync_offset;
-   uint32_t *client_ta_update_value;
-   uint32_t *sync_pmr_flags;
-   uint8_t *cmd_3d;
-   uint8_t *cmd_3d_pr;
-   uint8_t *cmd_ta;
-   char *update_fence_name;
-   char *update_fence_name_3d;
-   void **client_3d_update_sync_prim_block;
-   void **client_ta_fence_sync_prim_block;
-   void **client_ta_update_sync_prim_block;
-   void **sync_pmrs;
-   int32_t check_fence;
-   int32_t check_fence_3d;
-   int32_t update_timeline;
-   int32_t update_timeline_3d;
-   uint32_t cmd_3d_size;
-   uint32_t cmd_3d_pr_size;
-   uint32_t client_3d_update_count;
-   uint32_t client_ta_fence_count;
-   uint32_t client_ta_update_count;
-   uint32_t ext_job_ref;
-   uint32_t num_draw_calls;
-   uint32_t num_indices;
-   uint32_t num_mrts;
-   uint32_t pdump_flags;
-   uint32_t client_pr_fence_ufo_sync_offset;
-   uint32_t client_pr_fence_value;
-   uint32_t render_target_size;
-   uint32_t sync_pmr_count;
-   uint32_t cmd_ta_size;
-   bool abort;
-   bool kick_3d;
-   bool kick_pr;
-   bool kick_ta;
-} PACKED;
-
-struct pvr_srv_rgx_kick_ta3d2_ret {
-   enum pvr_srv_error error;
-   int32_t update_fence;
-   int32_t update_fence_3d;
-} PACKED;
 
 
 int strcpy_from_trace(int pid, __u64 src, char *dst, size_t dst_len)
@@ -731,7 +269,7 @@ void print_drm_version(int pid, __u64 src)
 
 void print_pvrsrv_init(int pid, __u64 src)
 {
-	struct drm_srvkm_init_data data = {0};
+	struct drm_pvr_srvkm_init_data data = {0};
 	memcpy_from_trace(pid, src, &data, sizeof(data));
 	
 	printf("drm_srvkm_init: %u (", data.init_module);
@@ -764,7 +302,7 @@ static void dump_hex(char *data, int size)
 	}
 }
 
-bool print_pvr_srv_cmd_data(int pid, struct drm_srvkm_cmd *cmd)
+bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 {
 #define VALIDATE_SIZES(name) \
 	if (cmd->in_data_size != sizeof(din)) { \
@@ -1096,7 +634,7 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_srvkm_cmd *cmd)
 
 void print_pvrsrv_cmd(int pid, __u64 src)
 {
-	struct drm_srvkm_cmd cmd = {0};
+	struct drm_pvr_srvkm_cmd cmd = {0};
 	memcpy_from_trace(pid, src, &cmd, sizeof(cmd));
 	
 	if (!print_pvr_srv_cmd_data(pid, &cmd))
@@ -1110,13 +648,13 @@ void print_pvrsrv_cmd(int pid, __u64 src)
 void print_syscall(struct ptrace_syscall_info *sci, struct ptrace_syscall_info *sci_exit, int pid, const char *open_path)
 {
 	if (!(sci->entry.nr == SYS_openat || sci->entry.nr == SYS_close || sci->entry.nr == SYS_ioctl
-		 || sci->entry.nr == SYS_mmap  || sci->entry.nr == SYS_munmap))
+		 || sci->entry.nr == SYS_mmap || sci->entry.nr == SYS_munmap))
 		return;
 
 	if (sci->entry.nr == SYS_openat && sci_exit->exit.is_error)
 		return;
 
-	if (sci->entry.nr == SYS_ioctl && sci->entry.args[1] == DRM_IOCTL_SRVKM_CMD && !sci_exit->exit.is_error)
+	if (sci->entry.nr == SYS_ioctl && sci->entry.args[1] == DRM_IOCTL_PVR_SRVKM_CMD && !sci_exit->exit.is_error)
 	{
 		printf("ioctl(%lld) ", sci->entry.args[0]);
 		print_pvrsrv_cmd(pid, sci->entry.args[2]);
@@ -1193,7 +731,7 @@ void print_syscall(struct ptrace_syscall_info *sci, struct ptrace_syscall_info *
 		case DRM_IOCTL_SRVKM_INIT:
 			print_pvrsrv_init(pid, sci->entry.args[2]);
 			break;
-		case DRM_IOCTL_SRVKM_CMD:
+		case DRM_IOCTL_PVR_SRVKM_CMD:
 			print_pvrsrv_cmd(pid, sci->entry.args[2]);
 		break;
 		}
@@ -1234,16 +772,6 @@ int main(int argc, char **argv)
 	int status = 0;
 	while (waitpid(child, &status, 0) && ! WIFEXITED(status))
 	{
-	#if 0
-		struct user_regs_struct regs;
-		ptrace(PTRACE_GETREGSET, child, NULL, &regs);
-		printf("system call %d from %d\n", regs.orig_rax, child);
-	#endif
-	#if 0
-		struct iovec regs;
-		ptrace(PTRACE_GETREGSET, child, NT_PRSTATUS, &regs);
-		printf("ptrace(PTRACE_GETREGSET) len %zu\n", regs.iov_len);
-	#endif
 		struct ptrace_syscall_info sci;
 		long r = ptrace(PTRACE_GET_SYSCALL_INFO, child, sizeof(sci), &sci);
 		if (sci.op != PTRACE_SYSCALL_INFO_ENTRY)
