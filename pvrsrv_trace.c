@@ -304,16 +304,22 @@ static void dump_hex(char *data, int size)
 
 bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 {
-#define VALIDATE_SIZES(name) \
+#define VALIDATE_IN_SIZE(name) \
 	if (cmd->in_data_size != sizeof(din)) { \
 		fprintf(stderr, #name "_cmd size missmatch %u %zu\n", cmd->in_data_size, sizeof(din)); \
 		return false; \
-	} \
+	}
+
+#define VALIDATE_OUT_SIZE(name) \
 	if (cmd->out_data_size != sizeof(dout)) { \
 		fprintf(stderr, #name "_ret size missmatch %u %zu\n", cmd->out_data_size, sizeof(dout)); \
 		return false; \
 	}
-	
+
+#define VALIDATE_SIZES(name) \
+	VALIDATE_IN_SIZE(name) \
+	VALIDATE_OUT_SIZE(name)
+
 	if (cmd->bridge_id == PVR_SRV_BRIDGE_SRVCORE && cmd->bridge_func_id == PVR_SRV_BRIDGE_SRVCORE_CONNECT)
 	{
 		struct pvr_srv_bridge_connect_cmd din = {0};
@@ -326,6 +332,13 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 			din.build_options, din.DDK_build, din.DDK_version, din.flags);
 		printf(" out: bvnc %lX error %d capability_flags %X kernel_arch %X\n",
 			dout.bvnc, dout.error, dout.capability_flags, dout.kernel_arch);
+	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SRVCORE && cmd->bridge_func_id == PVR_SRV_BRIDGE_SRVCORE_DISCONNECT)
+	{
+		struct pvr_srv_bridge_disconnect_ret dout = {0};
+		VALIDATE_OUT_SIZE(pvr_srv_bridge_disconnect);
+		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
+		printf("pvr_srv_bridge_disconnect: error %d\n", dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SRVCORE && cmd->bridge_func_id == PVR_SRV_BRIDGE_SRVCORE_GETMULTICOREINFO)
 	{
@@ -639,7 +652,7 @@ void print_pvrsrv_cmd(int pid, __u64 src)
 	
 	if (!print_pvr_srv_cmd_data(pid, &cmd))
 	{
-		printf("drm_srvkm_cmd: bridge_id %u(%s) func_id %u(%s) in data %p out data %p in size %u out size %u\n",
+		printf("drm_pvr_srvkm_cmd: bridge_id %u(%s) func_id %u(%s) in data %p out data %p in size %u out size %u\n",
 			cmd.bridge_id, srv_bridge_id_to_str(cmd.bridge_id), cmd.bridge_func_id, srv_bridge_func_to_str(cmd.bridge_id,cmd.bridge_func_id),
 			(void*)cmd.in_data_ptr, (void*)cmd.out_data_ptr, cmd.in_data_size, cmd.out_data_size);
 	}

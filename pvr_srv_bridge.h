@@ -113,6 +113,7 @@ typedef struct pvr_dev_addr
 
 typedef void * pvr_handle_t;
 
+
 struct pvr_srv_bridge_connect_cmd
 {
 	uint32_t build_options;
@@ -128,6 +129,13 @@ struct pvr_srv_bridge_connect_ret
 	uint32_t capability_flags;
 	uint8_t kernel_arch;
 } PACKED;
+
+
+struct pvr_srv_bridge_disconnect_ret
+{
+	enum pvr_srv_error error;
+} PACKED;
+
 
 struct pvr_srv_bridge_getmulticoreinfo_cmd
 {
