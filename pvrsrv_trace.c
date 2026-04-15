@@ -329,9 +329,9 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
 		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
 
-		printf("pvr_srv_bridge_connect: build_options %X DDK_build %d DDK_version %X flags %X\n",
+		printf("pvr_srv_bridge_connect: build_options 0x%X DDK_build %d DDK_version 0x%X flags 0x%X\n",
 			din.build_options, din.DDK_build, din.DDK_version, din.flags);
-		printf(" out: bvnc %lX error %d capability_flags %X kernel_arch %dbit\n",
+		printf(" out: bvnc %lX error %d capability_flags 0x%X kernel_arch %dbit\n",
 			dout.bvnc, dout.error, dout.capability_flags, dout.kernel_arch);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SRVCORE && cmd->bridge_func_id == PVR_SRV_BRIDGE_SRVCORE_DISCONNECT)
@@ -398,6 +398,18 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 
 		printf("pvr_srv_bridge_releaseinfopage: pmr %p\n", din.pmr);
 		printf(" out: error %d\n", dout.error);
+	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_PMRLOCALIMPORTPMR)
+	{
+		struct pvr_srv_bridge_pmrlocalimportpmr_cmd din = {0};
+		struct pvr_srv_bridge_pmrlocalimportpmr_ret dout = {0};
+		VALIDATE_SIZES(pvr_srv_bridge_pmrlocalimportpmr);
+		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
+		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
+
+		printf("pvr_srv_bridge_pmrlocalimportpmr: ext_handle %p\n", din.ext_handle);
+		printf(" out: align 0x%lX size 0x%lX pmr %p error %d\n",
+			dout.size, dout.align, dout.pmr, dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_DEVMEMINTCTXCREATE)
 	{
@@ -498,10 +510,10 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 		memcpy_from_trace(pid, (__u64)din.annotation, annotation, i_min(din.annotation_size, sizeof(annotation) - 1));
 
 		printf("pvr_srv_physmem_new_ram_backed_pmr:\n size 0x%" PRIX64 " mapping_table %p (%d)\n annotation %p \"%s\" size %u\n"
-			" log2_page_size %u phy_blocks %u virt_blocks %u pdump_flags %X pid %u flags %lX\n",
+			" log2_page_size %u phy_blocks %u virt_blocks %u pdump_flags 0x%X pid %u flags 0x%lX\n",
 			din.size,din.mapping_table, mapping_table, din.annotation, annotation, din.annotation_size, din.log2_page_size,
 			din.phy_blocks, din.virt_blocks, din.pdump_flags, din.pid, din.flags);
-		printf(" out: pmr %p error %d out_flags %lX\n",
+		printf(" out: pmr %p error %d out_flags 0x%lX\n",
 			dout.pmr, dout.error, dout.out_flags);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_DEVMEMINTMAPPMR)
@@ -523,7 +535,7 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
 		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
 
-		printf("pvr_srv_devmem_int_reserve_range:\n address %p size 0x%zX serverHeap %p flags %lX\n",
+		printf("pvr_srv_devmem_int_reserve_range:\n address %p size 0x%zX serverHeap %p flags 0x%lX\n",
 			(void*)din.addr.addr,din.size,din.server_heap,din.flags);
 		printf(" out: reservation %p error %d\n",
 			dout.reservation, dout.error);
@@ -536,7 +548,7 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
 		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
 
-		printf("DevmemIntReserveRangeAndMapPMR:\n address %p size 0x%zX serverHeap %p pmr %p flags %lX\n",
+		printf("DevmemIntReserveRangeAndMapPMR:\n address %p size 0x%zX serverHeap %p pmr %p flags 0x%lX\n",
 			(void*)din.address.addr,din.length,din.server_heap,din.pmr,din.flags);
 		printf(" out: reservation %p error %d\n",
 			dout.reservation, dout.error);
@@ -561,7 +573,7 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
 		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
 
-		printf("DevmemXIntMapPages:\n pmr %p reservation %p page_count %d phys_page_offset %d virt_page_offset %d flags %lX\n",
+		printf("DevmemXIntMapPages:\n pmr %p reservation %p page_count %d phys_page_offset %d virt_page_offset %d flags 0x%lX\n",
 			din.pmr, din.reservation, din.page_count, din.phys_page_offset, din.virt_page_offset, din.flags);
 		printf(" out: error %d\n", dout.error);
 	}
@@ -595,7 +607,7 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
 		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
 
-		printf("pvr_srv_rgx_create_hwrt_dataset_cmd: flipped_multi_sample_ctl %lX multi_sample_ctl %lX hwrt_dataset %p\n"
+		printf("pvr_srv_rgx_create_hwrt_dataset_cmd: flipped_multi_sample_ctl 0x%lX multi_sample_ctl 0x%lX hwrt_dataset %p\n"
 			" isp_merge: lower_x %u lower_y %u scale_x %u scale_y %u upper_x %u upper_y %u\n"
 			" isp_mtile_size %u mtile_stride %u ppp_screen %u rgn_header_size %u te_aa %u te_mtile1 %u te_mtile2 %u te_screen %u\n"
 			" tpc_size %u tpc_stride %u max_rts %u\n",
@@ -755,7 +767,7 @@ void print_syscall(struct ptrace_syscall_info *sci, struct ptrace_syscall_info *
 
 	if (sci->entry.nr == SYS_openat)
 	{
-		printf(" openat(%lld, \"%s\", %llX)", sci->entry.args[0], open_path, sci->entry.args[2]);
+		printf(" openat(%lld, \"%s\", 0x%llX)", sci->entry.args[0], open_path, sci->entry.args[2]);
 	}
 	else if (sci->entry.nr == SYS_close)
 	{
@@ -777,7 +789,7 @@ void print_syscall(struct ptrace_syscall_info *sci, struct ptrace_syscall_info *
 		__u64 c = sci->entry.args[1];
 		if (_IOC_TYPE(c) != DRM_IOCTL_BASE)
 		{
-			printf(" ioctl(%lld, %llX(not drm), 0x%llX)",sci->entry.args[0], c, sci->entry.args[2]);
+			printf(" ioctl(%lld, 0x%llX(not drm), 0x%llX)",sci->entry.args[0], c, sci->entry.args[2]);
 		}
 		else
 		{
@@ -796,7 +808,7 @@ void print_syscall(struct ptrace_syscall_info *sci, struct ptrace_syscall_info *
 					dir_str = "R";
 				else if (dir == (_IOC_READ|_IOC_WRITE))
 					dir_str = "RW";
-				printf(" ioctl(%lld, %llX(%s %X %d), 0x%llX)",sci->entry.args[0], c, dir_str, (int)_IOC_NR(c), (int)_IOC_SIZE(c), sci->entry.args[2]);
+				printf(" ioctl(%lld, 0x%llX(%s 0x%X %d), 0x%llX)",sci->entry.args[0], c, dir_str, (int)_IOC_NR(c), (int)_IOC_SIZE(c), sci->entry.args[2]);
 			}
 		}
 	}
@@ -810,7 +822,7 @@ void print_syscall(struct ptrace_syscall_info *sci, struct ptrace_syscall_info *
 		printf(")");
 	}
 
-	printf(" = %llX%s\n", sci_exit->exit.rval, sci_exit->exit.is_error ? " ERROR" : "");
+	printf(" = 0x%llX%s\n", sci_exit->exit.rval, sci_exit->exit.is_error ? " ERROR" : "");
 	
 	if (sci->entry.nr == SYS_ioctl)
 	{

@@ -197,6 +197,20 @@ struct pvr_srv_bridge_releaseinfopage_ret
 } PACKED;
 
 
+struct pvr_srv_bridge_pmrlocalimportpmr_cmd
+{
+	pvr_handle_t ext_handle;
+} PACKED;
+
+struct pvr_srv_bridge_pmrlocalimportpmr_ret
+{
+	uint64_t align;
+	uint64_t size;
+	pvr_handle_t pmr;
+	enum pvr_srv_error error;
+} PACKED;
+
+
 struct pvr_srv_devmem_int_ctx_create_cmd
 {
 	bool kernel_memory_ctx;
