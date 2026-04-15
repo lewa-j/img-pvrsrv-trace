@@ -373,6 +373,17 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 		printf(" out: server_memctx %p data %p error %d cpu_cache_line_size %d\n",
 			dout.server_memctx, dout.server_memctx_data, dout.error, dout.cpu_cache_line_size);
 	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_DEVMEMINTCTXDESTROY)
+	{
+		struct pvr_srv_devmem_int_ctx_destroy_cmd din = {0};
+		struct pvr_srv_devmem_int_ctx_destroy_ret dout = {0};
+		VALIDATE_SIZES(pvr_srv_devmem_int_ctx_destroy);
+		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
+		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
+
+		printf("pvr_srv_devmem_int_ctx_destroy: server_memctx %p\n", din.server_memctx);
+		printf(" out: error %d \n", dout.error);
+	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_HEAPCFGHEAPCOUNT)
 	{
 		struct pvr_srv_heap_count_cmd din = {0};

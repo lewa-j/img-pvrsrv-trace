@@ -158,6 +158,7 @@ struct pvr_srv_bridge_getmulticoreinfo_ret
 	uint32_t num_cores;
 } PACKED;
 
+
 struct pvr_srv_devmem_int_ctx_create_cmd
 {
 	bool kernel_memory_ctx;
@@ -170,6 +171,18 @@ struct pvr_srv_devmem_int_ctx_create_ret
 	enum pvr_srv_error error;
 	uint32_t cpu_cache_line_size;
 } PACKED;
+
+
+struct pvr_srv_devmem_int_ctx_destroy_cmd
+{
+	void *server_memctx;
+} PACKED;
+
+struct pvr_srv_devmem_int_ctx_destroy_ret
+{
+	enum pvr_srv_error error;
+} PACKED;
+
 
 struct pvr_srv_heap_count_cmd
 {
