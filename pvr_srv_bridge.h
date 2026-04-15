@@ -211,6 +211,17 @@ struct pvr_srv_bridge_pmrlocalimportpmr_ret
 } PACKED;
 
 
+struct pvr_srv_pmr_unref_pmr_cmd
+{
+	void *pmr;
+} PACKED;
+
+struct pvr_srv_pmr_unref_pmr_ret
+{
+	enum pvr_srv_error error;
+} PACKED;
+
+
 struct pvr_srv_devmem_int_ctx_create_cmd
 {
 	bool kernel_memory_ctx;

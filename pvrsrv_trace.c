@@ -411,6 +411,17 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 		printf(" out: align 0x%lX size 0x%lX pmr %p error %d\n",
 			dout.size, dout.align, dout.pmr, dout.error);
 	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_PMRUNREFPMR)
+	{
+		struct pvr_srv_pmr_unref_pmr_cmd din = {0};
+		struct pvr_srv_pmr_unref_pmr_ret dout = {0};
+		VALIDATE_SIZES(pvr_srv_pmr_unref_pmr);
+		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
+		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
+
+		printf("pvr_srv_pmr_unref_pmr: pmr %p\n", din.pmr);
+		printf(" out: error %d\n", dout.error);
+	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_DEVMEMINTCTXCREATE)
 	{
 		struct pvr_srv_devmem_int_ctx_create_cmd din = {0};
