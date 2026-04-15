@@ -197,12 +197,12 @@ struct pvr_srv_bridge_releaseinfopage_ret
 } PACKED;
 
 
-struct pvr_srv_bridge_pmrlocalimportpmr_cmd
+struct pvr_srv_pmr_localimportpmr_cmd
 {
 	pvr_handle_t ext_handle;
 } PACKED;
 
-struct pvr_srv_bridge_pmrlocalimportpmr_ret
+struct pvr_srv_pmr_localimportpmr_ret
 {
 	uint64_t align;
 	uint64_t size;
@@ -361,7 +361,7 @@ struct pvr_srv_devmem_int_reserve_range_ret
 } PACKED;
 
 
-struct PVRSRV_BRIDGE_IN_DEVMEMINTRESERVERANGEANDMAPPMR
+struct pvr_srv_devmem_int_reserve_range_and_map_pmr_cmd
 {
 	pvr_dev_addr_t address;
 	size_t length;
@@ -370,28 +370,28 @@ struct PVRSRV_BRIDGE_IN_DEVMEMINTRESERVERANGEANDMAPPMR
 	uint64_t flags;
 } PACKED;
 
-struct PVRSRV_BRIDGE_OUT_DEVMEMINTRESERVERANGEANDMAPPMR
+struct pvr_srv_devmem_int_reserve_range_and_map_pmr_ret
 {
 	pvr_handle_t reservation;
 	enum pvr_srv_error error;
 } PACKED;
 
-/* DevmemXIntReserveRange */
-struct PVRSRV_BRIDGE_IN_DEVMEMXINTRESERVERANGE
+
+struct pvr_srv_devmem_x_int_reserve_range_cmd
 {
 	pvr_dev_addr_t address;
 	size_t length;
 	pvr_handle_t server_heap;
 } PACKED;
 
-struct PVRSRV_BRIDGE_OUT_DEVMEMXINTRESERVERANGE
+struct pvr_srv_devmem_x_int_reserve_range_ret
 {
 	pvr_handle_t reservation;
 	enum pvr_srv_error error;
 } PACKED;
 
-/* DevmemXIntMapPages */
-struct PVRSRV_BRIDGE_IN_DEVMEMXINTMAPPAGES
+
+struct pvr_srv_devmem_x_int_map_pages_cmd
 {
 	pvr_handle_t pmr;
 	pvr_handle_t reservation;
@@ -401,7 +401,7 @@ struct PVRSRV_BRIDGE_IN_DEVMEMXINTMAPPAGES
 	uint64_t flags;
 } PACKED;
 
-struct PVRSRV_BRIDGE_OUT_DEVMEMXINTMAPPAGES
+struct pvr_srv_devmem_x_int_map_pages_ret
 {
 	enum pvr_srv_error error;
 } PACKED;

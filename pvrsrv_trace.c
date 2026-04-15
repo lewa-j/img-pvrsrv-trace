@@ -401,13 +401,13 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_PMRLOCALIMPORTPMR)
 	{
-		struct pvr_srv_bridge_pmrlocalimportpmr_cmd din = {0};
-		struct pvr_srv_bridge_pmrlocalimportpmr_ret dout = {0};
-		VALIDATE_SIZES(pvr_srv_bridge_pmrlocalimportpmr);
+		struct pvr_srv_pmr_localimportpmr_cmd din = {0};
+		struct pvr_srv_pmr_localimportpmr_ret dout = {0};
+		VALIDATE_SIZES(pvr_srv_pmr_localimportpmr);
 		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
 		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
 
-		printf("pvr_srv_bridge_pmrlocalimportpmr: ext_handle %p\n", din.ext_handle);
+		printf("pvr_srv_pmr_localimportpmr: ext_handle %p\n", din.ext_handle);
 		printf(" out: align 0x%lX size 0x%lX pmr %p error %d\n",
 			dout.size, dout.align, dout.pmr, dout.error);
 	}
@@ -553,8 +553,8 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_DEVMEMINTRESERVERANGEANDMAPPMR)
 	{
-		struct PVRSRV_BRIDGE_IN_DEVMEMINTRESERVERANGEANDMAPPMR din = {0};
-		struct PVRSRV_BRIDGE_OUT_DEVMEMINTRESERVERANGEANDMAPPMR dout = {0};
+		struct pvr_srv_devmem_int_reserve_range_and_map_pmr_cmd din = {0};
+		struct pvr_srv_devmem_int_reserve_range_and_map_pmr_ret dout = {0};
 		VALIDATE_SIZES(DevmemIntReserveRangeAndMapPMR);
 		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
 		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
@@ -566,8 +566,8 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_DEVMEMXINTRESERVERANGE)
 	{
-		struct PVRSRV_BRIDGE_IN_DEVMEMXINTRESERVERANGE din = {0};
-		struct PVRSRV_BRIDGE_OUT_DEVMEMXINTRESERVERANGE dout = {0};
+		struct pvr_srv_devmem_x_int_reserve_range_cmd din = {0};
+		struct pvr_srv_devmem_x_int_reserve_range_ret dout = {0};
 		VALIDATE_SIZES(DevmemXIntReserveRange);
 		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
 		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
@@ -578,8 +578,8 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_DEVMEMXINTMAPPAGES)
 	{
-		struct PVRSRV_BRIDGE_IN_DEVMEMXINTMAPPAGES din = {0};
-		struct PVRSRV_BRIDGE_OUT_DEVMEMXINTMAPPAGES dout = {0};
+		struct pvr_srv_devmem_x_int_map_pages_cmd din = {0};
+		struct pvr_srv_devmem_x_int_map_pages_ret dout = {0};
 		VALIDATE_SIZES(DevmemXIntMapPages);
 		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
 		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
