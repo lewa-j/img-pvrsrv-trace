@@ -165,6 +165,18 @@ struct pvr_srv_bridge_getdevclockspeed_ret
 } PACKED;
 
 
+struct pvr_srv_bridge_alignmentcheck_cmd
+{
+	uint32_t *align_checks;
+	uint32_t align_checks_size;
+} PACKED;
+
+struct pvr_srv_bridge_alignmentcheck_ret
+{
+	enum pvr_srv_error error;
+} PACKED;
+
+
 struct pvr_srv_bridge_getmulticoreinfo_cmd
 {
 	uint64_t *caps;

@@ -368,6 +368,32 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
 		printf("pvr_srv_bridge_getdevclockspeed: error %d clock_speed %d\n", dout.error, dout.clock_speed);
 	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SRVCORE && cmd->bridge_func_id == PVR_SRV_BRIDGE_SRVCORE_ALIGNMENTCHECK)
+	{
+		struct pvr_srv_bridge_alignmentcheck_cmd din = {0};
+		struct pvr_srv_bridge_alignmentcheck_ret dout = {0};
+		VALIDATE_SIZES(pvr_srv_bridge_alignmentcheck);
+		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
+		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
+
+		printf("pvr_srv_bridge_alignmentcheck: align_checks %p align_checks_size %d\n",
+			din.align_checks, din.align_checks_size);
+		printf(" out: error %d\n", dout.error);
+
+		uint32_t checks[64] = {0};
+		if (din.align_checks_size)
+		{
+			int sz = i_min(din.align_checks_size * sizeof(uint32_t), sizeof(checks));
+			memcpy_from_trace(pid, (__u64)din.align_checks, checks, sz);
+		}
+		for (uint32_t i = 0; i < i_min(64, din.align_checks_size); i++)
+		{
+			printf("  %u: 0x%X \t", i, checks[i]);
+			if ((i & 0x7) == 0x7)
+				printf("\n");
+		}
+		printf("\n");
+	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SRVCORE && cmd->bridge_func_id == PVR_SRV_BRIDGE_SRVCORE_GETMULTICOREINFO)
 	{
 		struct pvr_srv_bridge_getmulticoreinfo_cmd din = {0};
