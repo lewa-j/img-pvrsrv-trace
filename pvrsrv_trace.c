@@ -331,7 +331,7 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 		
 		printf("pvr_srv_bridge_connect: build_options %X DDK_build %d DDK_version %X flags %X\n",
 			din.build_options, din.DDK_build, din.DDK_version, din.flags);
-		printf(" out: bvnc %lX error %d capability_flags %X kernel_arch %X\n",
+		printf(" out: bvnc %lX error %d capability_flags %X kernel_arch %dbit\n",
 			dout.bvnc, dout.error, dout.capability_flags, dout.kernel_arch);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SRVCORE && cmd->bridge_func_id == PVR_SRV_BRIDGE_SRVCORE_DISCONNECT)
@@ -828,6 +828,7 @@ int main(int argc, char **argv)
 		if (sci.entry.nr == SYS_openat && !sci_exit.exit.is_error)
 		{
 			if (!strncmp(open_path, "/dev/dri/renderD128", sizeof(open_path))
+				|| !strncmp(open_path, "/dev/dri/card0", sizeof(open_path))
 				|| !strncmp(open_path, "/dev/dri/card1", sizeof(open_path)))
 			{
 				printf("!!! open dri device = %lld\n", sci_exit.exit.rval);
