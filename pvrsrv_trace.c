@@ -55,6 +55,7 @@ const char *srv_bridge_func_to_str(int b, int f)
 				X(RELEASEGLOBALEVENTOBJECT)
 				X(EVENTOBJECTOPEN)
 				X(EVENTOBJECTCLOSE)
+				X(GETDEVCLOCKSPEED)
 				X(ALIGNMENTCHECK)
 				X(GETMULTICOREINFO)
 				X(ACQUIREINFOPAGE)
@@ -339,6 +340,13 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 		VALIDATE_OUT_SIZE(pvr_srv_bridge_disconnect);
 		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
 		printf("pvr_srv_bridge_disconnect: error %d\n", dout.error);
+	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SRVCORE && cmd->bridge_func_id == PVR_SRV_BRIDGE_SRVCORE_GETDEVCLOCKSPEED)
+	{
+		struct pvr_srv_bridge_getdevclockspeed_ret dout = {0};
+		VALIDATE_OUT_SIZE(pvr_srv_bridge_getdevclockspeed);
+		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
+		printf("pvr_srv_bridge_getdevclockspeed: error %d clock_speed %d\n", dout.error, dout.clock_speed);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SRVCORE && cmd->bridge_func_id == PVR_SRV_BRIDGE_SRVCORE_GETMULTICOREINFO)
 	{

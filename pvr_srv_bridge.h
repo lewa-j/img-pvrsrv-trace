@@ -18,6 +18,7 @@
 #define PVR_SRV_BRIDGE_SRVCORE_RELEASEGLOBALEVENTOBJECT 3UL
 #define PVR_SRV_BRIDGE_SRVCORE_EVENTOBJECTOPEN 4UL
 #define PVR_SRV_BRIDGE_SRVCORE_EVENTOBJECTCLOSE 6UL
+#define PVR_SRV_BRIDGE_SRVCORE_GETDEVCLOCKSPEED 8UL
 #define PVR_SRV_BRIDGE_SRVCORE_ALIGNMENTCHECK 10UL
 #define PVR_SRV_BRIDGE_SRVCORE_GETMULTICOREINFO 12UL
 #define PVR_SRV_BRIDGE_SRVCORE_ACQUIREINFOPAGE 15UL
@@ -134,6 +135,13 @@ struct pvr_srv_bridge_connect_ret
 struct pvr_srv_bridge_disconnect_ret
 {
 	enum pvr_srv_error error;
+} PACKED;
+
+
+struct pvr_srv_bridge_getdevclockspeed_ret
+{
+	enum pvr_srv_error error;
+	uint32_t clock_speed;
 } PACKED;
 
 
