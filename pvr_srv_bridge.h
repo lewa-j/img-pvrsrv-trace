@@ -140,6 +140,24 @@ struct pvr_srv_bridge_disconnect_ret
 } PACKED;
 
 
+struct pvr_srv_bridge_acquireglobaleventobject_ret
+{
+	pvr_handle_t global_event_object;
+	enum pvr_srv_error error;
+} PACKED;
+
+
+struct pvr_srv_bridge_releaseglobaleventobject_cmd
+{
+	pvr_handle_t global_event_object;
+} PACKED;
+
+struct pvr_srv_bridge_releaseglobaleventobject_ret
+{
+	enum pvr_srv_error error;
+} PACKED;
+
+
 struct pvr_srv_bridge_getdevclockspeed_ret
 {
 	enum pvr_srv_error error;

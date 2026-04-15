@@ -256,7 +256,7 @@ void print_drm_version(int pid, __u64 src)
 {
 	drm_version_t data = {0};
 	memcpy_from_trace(pid, src, &data, sizeof(data));
-	
+
 	printf("drm_version: %d.%d.%d name_len %zu date_len %zu desc_len %zu\n", data.version_major, data.version_minor, data.version_patchlevel,
 		data.name_len, data.date_len, data.desc_len);
 	char name[2048]={0};
@@ -328,7 +328,7 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 		VALIDATE_SIZES(pvr_srv_bridge_connect);
 		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
 		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
-		
+
 		printf("pvr_srv_bridge_connect: build_options %X DDK_build %d DDK_version %X flags %X\n",
 			din.build_options, din.DDK_build, din.DDK_version, din.flags);
 		printf(" out: bvnc %lX error %d capability_flags %X kernel_arch %dbit\n",
@@ -340,6 +340,26 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 		VALIDATE_OUT_SIZE(pvr_srv_bridge_disconnect);
 		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
 		printf("pvr_srv_bridge_disconnect: error %d\n", dout.error);
+	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SRVCORE && cmd->bridge_func_id == PVR_SRV_BRIDGE_SRVCORE_ACQUIREGLOBALEVENTOBJECT)
+	{
+		struct pvr_srv_bridge_acquireglobaleventobject_ret dout = {0};
+		VALIDATE_OUT_SIZE(pvr_srv_bridge_acquireglobaleventobject);
+		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
+		printf("pvr_srv_bridge_acquireglobaleventobject: global_event_object %p error %d\n",
+			dout.global_event_object, dout.error);
+	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SRVCORE && cmd->bridge_func_id == PVR_SRV_BRIDGE_SRVCORE_RELEASEGLOBALEVENTOBJECT)
+	{
+		struct pvr_srv_bridge_releaseglobaleventobject_cmd din = {0};
+		struct pvr_srv_bridge_releaseglobaleventobject_ret dout = {0};
+		VALIDATE_SIZES(pvr_srv_bridge_releaseglobaleventobject);
+		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
+		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
+
+		printf("pvr_srv_bridge_releaseglobaleventobject: global_event_object %p\n",
+			din.global_event_object);
+		printf(" out: error %d\n", dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SRVCORE && cmd->bridge_func_id == PVR_SRV_BRIDGE_SRVCORE_GETDEVCLOCKSPEED)
 	{
@@ -355,7 +375,7 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 		VALIDATE_SIZES(pvr_srv_bridge_getmulticoreinfo);
 		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
 		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
-		
+
 		printf("pvr_srv_bridge_getmulticoreinfo: caps %p caps_size %d\n",
 			din.caps, din.caps_size);
 		printf(" out: caps %p error %d num_cores %d\n",
