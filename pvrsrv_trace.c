@@ -423,6 +423,28 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 		printf("pvr_srv_bridge_releaseinfopage: pmr %p\n", din.pmr);
 		printf(" out: error %d\n", dout.error);
 	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_PMRMAKELOCALIMPORTHANDLE)
+	{
+		struct pvr_srv_pmr_makelocalimporthandle_cmd din = {0};
+		struct pvr_srv_pmr_makelocalimporthandle_ret dout = {0};
+		VALIDATE_SIZES(pvr_srv_pmr_makelocalimporthandle);
+		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
+		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
+
+		printf("pvr_srv_pmr_makelocalimporthandle: buffer %p\n", din.buffer);
+		printf(" out: ext_mem %p error %d\n", dout.ext_mem, dout.error);
+	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_PMRUNMAKELOCALIMPORTHANDLE)
+	{
+		struct pvr_srv_pmr_unmakelocalimporthandle_cmd din = {0};
+		struct pvr_srv_pmr_unmakelocalimporthandle_ret dout = {0};
+		VALIDATE_SIZES(pvr_srv_pmr_unmakelocalimporthandle);
+		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
+		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
+
+		printf("pvr_srv_pmr_unmakelocalimporthandle: ext_mem %p\n", din.ext_mem);
+		printf(" out: error %d\n", dout.error);
+	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_PMRLOCALIMPORTPMR)
 	{
 		struct pvr_srv_pmr_localimportpmr_cmd din = {0};

@@ -217,6 +217,30 @@ struct pvr_srv_bridge_releaseinfopage_ret
 	pvr_srv_error error;
 } PACKED;
 
+//MM
+
+struct pvr_srv_pmr_makelocalimporthandle_cmd
+{
+	pvr_handle_t buffer;
+} PACKED;
+
+struct pvr_srv_pmr_makelocalimporthandle_ret
+{
+	pvr_handle_t ext_mem;
+	pvr_srv_error error;
+} PACKED;
+
+
+struct pvr_srv_pmr_unmakelocalimporthandle_cmd
+{
+	pvr_handle_t ext_mem;
+} PACKED;
+
+struct pvr_srv_pmr_unmakelocalimporthandle_ret
+{
+	pvr_srv_error error;
+} PACKED;
+
 
 struct pvr_srv_pmr_localimportpmr_cmd
 {
@@ -640,6 +664,8 @@ pvr_srv_error PVRSRVGetMultiCoreInfo(int fd, uint32_t caps_size, uint32_t *num_c
 pvr_srv_error PVRSRVAcquireInfoPage(int fd, pvr_handle_t *out_pmr);
 pvr_srv_error PVRSRVReleaseInfoPage(int fd, pvr_handle_t pmr);
 
+// PMRMakeLocalImportHandle
+// PMRUnmakeLocalImportHandle
 pvr_srv_error PVRSRVPMRLocalImportPMR(int fd, pvr_handle_t ext_handle, pvr_handle_t *pmr, uint64_t *size, uint64_t *align);
 pvr_srv_error PVRSRVPMRUnrefPMR(int fd, pvr_handle_t pmr);
 pvr_srv_error PVRSRVDevmemIntCtxCreate(int fd, bool kernelMemoryCtx,
