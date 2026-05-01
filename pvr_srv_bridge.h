@@ -4,10 +4,19 @@
 // and img-rogue common_*_bridge.h
 
 #include <stdint.h>
+#include <stddef.h>
 
 // from mesa util/macros.h
 #define PACKED __attribute__((__packed__))
 #define BITFIELD_BIT(b) (1u << (b))
+
+#define PVR_SRV_VERSION_MAJ 24U
+#define PVR_SRV_VERSION_MIN 2U
+#define PVR_SRV_VERSION_BUILD 6603887
+
+#define PVR_SRV_VERSION                                              \
+	(((uint32_t)((uint32_t)(PVR_SRV_VERSION_MAJ) & 0xFFFFU) << 16U) |\
+	(((PVR_SRV_VERSION_MIN) & 0xFFFFU) << 0U))
 
 
 #define PVR_SRV_BRIDGE_SRVCORE 1UL
@@ -96,7 +105,7 @@
 #define ROGUE_FWIF_NUM_RTDATA_FREELISTS 12U
 
 
-enum pvr_srv_error
+typedef enum pvr_srv_error_e
 {
 	PVR_SRV_OK,
 	PVR_SRV_ERROR_RETRY = 25,
@@ -107,7 +116,7 @@ enum pvr_srv_error
 	PVR_SRV_ERROR_HANDLE_INDEX_OUT_OF_RANGE = 203,
 	PVR_SRV_ERROR_BRIDGE_ARRAY_SIZE_TOO_BIG = 350,
 	PVR_SRV_ERROR_FORCE_I32 = 0x7fffffff
-};
+} pvr_srv_error;
 
 typedef struct pvr_dev_addr
 {
@@ -128,7 +137,7 @@ struct pvr_srv_bridge_connect_cmd
 struct pvr_srv_bridge_connect_ret
 {
 	uint64_t bvnc;
-	enum pvr_srv_error error;
+	pvr_srv_error error;
 	uint32_t capability_flags;
 	uint8_t kernel_arch;
 } PACKED;
@@ -136,14 +145,14 @@ struct pvr_srv_bridge_connect_ret
 
 struct pvr_srv_bridge_disconnect_ret
 {
-	enum pvr_srv_error error;
+	pvr_srv_error error;
 } PACKED;
 
 
 struct pvr_srv_bridge_acquireglobaleventobject_ret
 {
 	pvr_handle_t global_event_object;
-	enum pvr_srv_error error;
+	pvr_srv_error error;
 } PACKED;
 
 
@@ -154,13 +163,13 @@ struct pvr_srv_bridge_releaseglobaleventobject_cmd
 
 struct pvr_srv_bridge_releaseglobaleventobject_ret
 {
-	enum pvr_srv_error error;
+	pvr_srv_error error;
 } PACKED;
 
 
 struct pvr_srv_bridge_getdevclockspeed_ret
 {
-	enum pvr_srv_error error;
+	pvr_srv_error error;
 	uint32_t clock_speed;
 } PACKED;
 
@@ -173,7 +182,7 @@ struct pvr_srv_bridge_alignmentcheck_cmd
 
 struct pvr_srv_bridge_alignmentcheck_ret
 {
-	enum pvr_srv_error error;
+	pvr_srv_error error;
 } PACKED;
 
 
@@ -186,7 +195,7 @@ struct pvr_srv_bridge_getmulticoreinfo_cmd
 struct pvr_srv_bridge_getmulticoreinfo_ret
 {
 	uint64_t *caps;
-	enum pvr_srv_error error;
+	pvr_srv_error error;
 	uint32_t num_cores;
 } PACKED;
 
@@ -194,7 +203,7 @@ struct pvr_srv_bridge_getmulticoreinfo_ret
 struct pvr_srv_bridge_acquireinfopage_ret
 {
 	pvr_handle_t pmr;
-	enum pvr_srv_error error;
+	pvr_srv_error error;
 } PACKED;
 
 
@@ -205,7 +214,7 @@ struct pvr_srv_bridge_releaseinfopage_cmd
 
 struct pvr_srv_bridge_releaseinfopage_ret
 {
-	enum pvr_srv_error error;
+	pvr_srv_error error;
 } PACKED;
 
 
@@ -219,7 +228,7 @@ struct pvr_srv_pmr_localimportpmr_ret
 	uint64_t align;
 	uint64_t size;
 	pvr_handle_t pmr;
-	enum pvr_srv_error error;
+	pvr_srv_error error;
 } PACKED;
 
 
@@ -230,7 +239,7 @@ struct pvr_srv_pmr_unref_pmr_cmd
 
 struct pvr_srv_pmr_unref_pmr_ret
 {
-	enum pvr_srv_error error;
+	pvr_srv_error error;
 } PACKED;
 
 
@@ -243,7 +252,7 @@ struct pvr_srv_devmem_int_ctx_create_ret
 {
 	pvr_handle_t server_memctx;
 	pvr_handle_t server_memctx_data;
-	enum pvr_srv_error error;
+	pvr_srv_error error;
 	uint32_t cpu_cache_line_size;
 } PACKED;
 
@@ -255,13 +264,13 @@ struct pvr_srv_devmem_int_ctx_destroy_cmd
 
 struct pvr_srv_devmem_int_ctx_destroy_ret
 {
-	enum pvr_srv_error error;
+	pvr_srv_error error;
 } PACKED;
 
 
 struct pvr_srv_heap_cfg_count_ret
 {
-	enum pvr_srv_error error;
+	pvr_srv_error error;
 	uint32_t heap_config_count;
 } PACKED;
 
@@ -273,7 +282,7 @@ struct pvr_srv_heap_count_cmd
 
 struct pvr_srv_heap_count_ret
 {
-	enum pvr_srv_error error;
+	pvr_srv_error error;
 	uint32_t heap_count;
 } PACKED;
 
@@ -288,7 +297,7 @@ struct pvr_srv_heap_cfg_name_cmd
 struct pvr_srv_heap_cfg_name_ret
 {
 	char *heap_config_name;
-	enum pvr_srv_error error;
+	pvr_srv_error error;
 } PACKED;
 
 
@@ -306,7 +315,7 @@ struct pvr_srv_heap_cfg_details_ret
 	uint64_t size;
 	uint64_t reserved_size;
 	char *buffer;
-	enum pvr_srv_error error;
+	pvr_srv_error error;
 	uint32_t log2_page_size;
 	uint32_t log2_alignment;
 } PACKED;
@@ -340,7 +349,7 @@ struct pvr_srv_physheap_getmeminfo_cmd
 struct pvr_srv_physheap_getmeminfo_ret
 {
 	struct pvr_phys_heap_mem_stats *phys_heap_mem_stats;
-	enum pvr_srv_error error;
+	pvr_srv_error error;
 } PACKED;
 
 
@@ -354,7 +363,7 @@ struct pvr_srv_devmem_int_heap_create_cmd
 struct pvr_srv_devmem_int_heap_create_ret
 {
 	pvr_handle_t server_heap;
-	enum pvr_srv_error error;
+	pvr_srv_error error;
 } PACKED;
 
 struct pvr_srv_physmem_new_ram_backed_pmr_cmd
@@ -374,7 +383,7 @@ struct pvr_srv_physmem_new_ram_backed_pmr_cmd
 struct pvr_srv_physmem_new_ram_backed_pmr_ret
 {
 	pvr_handle_t pmr;
-	enum pvr_srv_error error;
+	pvr_srv_error error;
 	uint64_t out_flags;
 } PACKED;
 
@@ -387,7 +396,7 @@ struct pvr_srv_devmem_int_map_pmr_cmd
 
 struct pvr_srv_devmem_int_map_pmr_ret
 {
-	enum pvr_srv_error error;
+	pvr_srv_error error;
 } PACKED;
 
 
@@ -402,7 +411,7 @@ struct pvr_srv_devmem_int_reserve_range_cmd
 struct pvr_srv_devmem_int_reserve_range_ret
 {
 	pvr_handle_t reservation;
-	enum pvr_srv_error error;
+	pvr_srv_error error;
 } PACKED;
 
 
@@ -418,7 +427,7 @@ struct pvr_srv_devmem_int_reserve_range_and_map_pmr_cmd
 struct pvr_srv_devmem_int_reserve_range_and_map_pmr_ret
 {
 	pvr_handle_t reservation;
-	enum pvr_srv_error error;
+	pvr_srv_error error;
 } PACKED;
 
 
@@ -432,7 +441,7 @@ struct pvr_srv_devmem_x_int_reserve_range_cmd
 struct pvr_srv_devmem_x_int_reserve_range_ret
 {
 	pvr_handle_t reservation;
-	enum pvr_srv_error error;
+	pvr_srv_error error;
 } PACKED;
 
 
@@ -448,7 +457,7 @@ struct pvr_srv_devmem_x_int_map_pages_cmd
 
 struct pvr_srv_devmem_x_int_map_pages_ret
 {
-	enum pvr_srv_error error;
+	pvr_srv_error error;
 } PACKED;
 
 
@@ -475,7 +484,7 @@ struct pvr_srv_rgx_submit_transfer2_cmd
 
 struct pvr_srv_rgx_submit_transfer2_ret
 {
-	enum pvr_srv_error error;
+	pvr_srv_error error;
 	int32_t update_fence_2d;
 	int32_t update_fence_3d;
 } PACKED;
@@ -495,7 +504,7 @@ struct pvr_srv_rgx_create_free_list_cmd
 struct pvr_srv_rgx_create_free_list_ret
 {
 	pvr_handle_t cleanup_cookie;
-	enum pvr_srv_error error;
+	pvr_srv_error error;
 } PACKED;
 
 
@@ -542,7 +551,7 @@ struct pvr_srv_rgx_create_hwrt_dataset_ret
 {
 	/* ROGUE_FWIF_NUM_RTDATAS sized array of handles. */
 	pvr_handle_t*hwrt_dataset;
-	enum pvr_srv_error error;
+	pvr_srv_error error;
 } PACKED;
 
 
@@ -597,8 +606,27 @@ struct pvr_srv_rgx_kick_ta3d2_cmd
 
 struct pvr_srv_rgx_kick_ta3d2_ret
 {
-	enum pvr_srv_error error;
+	pvr_srv_error error;
 	int32_t update_fence;
 	int32_t update_fence_3d;
 } PACKED;
+
+// client
+pvr_srv_error PVRSRVConnect(int fd, uint64_t *packedBvnc, uint32_t *capabilityFlags, uint8_t *kernelArch);
+pvr_srv_error PVRSRVDisconnect(int fd);
+pvr_srv_error PVRSRVGetDevClockSpeed(int fd, uint32_t *clock_speed);
+pvr_srv_error PVRSRVGetMultiCoreInfo(int fd, uint32_t caps_size, uint32_t *num_cores, uint64_t *caps);
+pvr_srv_error PVRSRVAcquireInfoPage(int fd, pvr_handle_t *out_pmr);
+pvr_srv_error PVRSRVReleaseInfoPage(int fd, pvr_handle_t pmr);
+
+pvr_srv_error PVRSRVPMRLocalImportPMR(int fd, pvr_handle_t ext_handle, pvr_handle_t *pmr, uint64_t *size, uint64_t *align);
+pvr_srv_error PVRSRVPMRUnrefPMR(int fd, pvr_handle_t pmr);
+pvr_srv_error PVRSRVDevmemIntCtxCreate(int fd, bool kernelMemoryCtx,
+	pvr_handle_t *devMemServerContext, pvr_handle_t *privData, uint32_t *CPUCacheLineSize);
+pvr_srv_error PVRSRVDevmemIntCtxDestroy(int fd, pvr_handle_t devMemServerContext);
+pvr_srv_error PVRSRVHeapCfgHeapConfigCount(int fd, uint32_t *heap_config_count);
+pvr_srv_error PVRSRVHeapCfgHeapCount(int fd, uint32_t heap_config_index, uint32_t *heap_count);
+pvr_srv_error PVRSRVHeapCfgHeapConfigName(int fd, uint32_t heap_config_index, uint32_t config_name_size, char *config_name_buffer);
+pvr_srv_error PVRSRVHeapCfgHeapDetails(int fd, uint32_t heap_config_index, uint32_t heap_index, uint32_t name_size, char *name_buffer,
+pvr_dev_addr_t *base_addr, uint64_t *heap_size, uint64_t *reserved_size, uint32_t *log2_data_page_size, uint32_t *log2_import_alignment);
 
