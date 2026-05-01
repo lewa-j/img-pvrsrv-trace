@@ -433,7 +433,7 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 
 		printf("pvr_srv_pmr_localimportpmr: ext_handle %p\n", din.ext_handle);
 		printf(" out: align 0x%lX size 0x%lX pmr %p error %d\n",
-			dout.size, dout.align, dout.pmr, dout.error);
+			dout.align, dout.size, dout.pmr, dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_PMRUNREFPMR)
 	{
