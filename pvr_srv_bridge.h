@@ -225,7 +225,7 @@ struct pvr_srv_pmr_localimportpmr_ret
 
 struct pvr_srv_pmr_unref_pmr_cmd
 {
-	void *pmr;
+	pvr_handle_t pmr;
 } PACKED;
 
 struct pvr_srv_pmr_unref_pmr_ret

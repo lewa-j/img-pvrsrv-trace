@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <unistd.h>
+#include <sys/mman.h>
 #include <xf86drm.h>
 //#define SUPPORT_LINUX_OSPAGE_MIGRATION 1
 #include "pvr_drm.h"
@@ -239,6 +240,97 @@ static pvr_srv_error PVRSRVGetMultiCoreInfo(int fd, uint32_t caps_size, uint32_t
 	return ret.error;
 }
 
+static pvr_srv_error PVRSRVAcquireInfoPage(int fd, pvr_handle_t *out_pmr)
+{
+	/* Initialize ret.error to a default error */
+	struct pvr_srv_bridge_acquireinfopage_ret ret = {
+		.error = PVR_SRV_ERROR_BRIDGE_CALL_FAILED,
+	};
+
+	int result = pvr_srv_bridge_call(fd, PVR_SRV_BRIDGE_SRVCORE, PVR_SRV_BRIDGE_SRVCORE_ACQUIREINFOPAGE,
+		nullptr, 0, &ret, sizeof(ret));
+	if (result || ret.error != PVR_SRV_OK)
+	{
+		LogError("PVR_SRV_BRIDGE_SRVCORE_ACQUIREINFOPAGE %d error %d", result, ret.error);
+		return ret.error;
+	}
+
+	if (out_pmr)
+		*out_pmr = ret.pmr;
+
+	return ret.error;
+}
+
+static pvr_srv_error PVRSRVReleaseInfoPage(int fd, pvr_handle_t pmr)
+{
+	struct pvr_srv_bridge_releaseinfopage_cmd cmd = {
+		.pmr = pmr,
+	};
+
+	/* Initialize ret.error to a default error */
+	struct pvr_srv_bridge_releaseinfopage_ret ret = {
+		.error = PVR_SRV_ERROR_BRIDGE_CALL_FAILED,
+	};
+
+	int result = pvr_srv_bridge_call(fd, PVR_SRV_BRIDGE_SRVCORE, PVR_SRV_BRIDGE_SRVCORE_RELEASEINFOPAGE,
+		&cmd, sizeof(cmd), &ret, sizeof(ret));
+	if (result || ret.error != PVR_SRV_OK)
+	{
+		LogError("PVR_SRV_BRIDGE_SRVCORE_RELEASEINFOPAGE %d error %d", result, ret.error);
+	}
+	return ret.error;
+}
+
+
+static pvr_srv_error PVRSRVPMRLocalImportPMR(int fd, pvr_handle_t ext_handle, pvr_handle_t *pmr, uint64_t *size, uint64_t *align)
+{
+	struct pvr_srv_pmr_localimportpmr_cmd cmd = {
+		.ext_handle = ext_handle,
+	};
+
+	/* Initialize ret.error to a default error */
+	struct pvr_srv_pmr_localimportpmr_ret ret = {
+		.error = PVR_SRV_ERROR_BRIDGE_CALL_FAILED,
+	};
+
+	int result = pvr_srv_bridge_call(fd, PVR_SRV_BRIDGE_MM, PVR_SRV_BRIDGE_MM_PMRLOCALIMPORTPMR,
+		&cmd, sizeof(cmd), &ret, sizeof(ret));
+	if (result || ret.error != PVR_SRV_OK)
+	{
+		LogError("PVR_SRV_BRIDGE_MM_PMRLOCALIMPORTPMR %d error %d", result, ret.error);
+		return ret.error;
+	}
+
+	if (pmr)
+		*pmr = ret.pmr;
+	if (size)
+		*size = ret.size;
+	if (align)
+		*align = ret.align;
+
+	return ret.error;
+}
+
+static pvr_srv_error PVRSRVPMRUnrefPMR(int fd, pvr_handle_t pmr)
+{
+	struct pvr_srv_pmr_unref_pmr_cmd cmd = {
+		.pmr = pmr,
+	};
+
+	/* Initialize ret.error to a default error */
+	struct pvr_srv_pmr_unref_pmr_ret ret = {
+		.error = PVR_SRV_ERROR_BRIDGE_CALL_FAILED,
+	};
+
+	int result = pvr_srv_bridge_call(fd, PVR_SRV_BRIDGE_MM, PVR_SRV_BRIDGE_MM_PMRUNREFPMR,
+		&cmd, sizeof(cmd), &ret, sizeof(ret));
+	if (result || ret.error != PVR_SRV_OK)
+	{
+		LogError("PVR_SRV_BRIDGE_MM_PMRUNREFPMR %d error %d", result, ret.error);
+	}
+	return ret.error;
+}
+
 static pvr_srv_error PVRSRVDevmemIntCtxCreate(int fd, bool kernelMemoryCtx,
 	pvr_handle_t *devMemServerContext, pvr_handle_t *privData, uint32_t *CPUCacheLineSize)
 {
@@ -391,6 +483,21 @@ pvr_dev_addr_t *base_addr, uint64_t *heap_size, uint64_t *reserved_size, uint32_
 	return ret.error;
 }
 
+static void dump_hex(char *data, int size, int row = 16)
+{
+	int di = 0;
+	while (di < size)
+	{
+		for (int j = 0; j < row; j++)
+		{
+			printf(" %.2X", data[di++]);
+			if (di >= size)
+			break;
+		}
+		printf("\n");
+	}
+}
+
 int main(int argc, const char **argv)
 {
 	const char *path = "/dev/dri/card0";
@@ -507,6 +614,61 @@ X(TFBC_LOSSY_GROUP_1)
 		close(fd);
 		return -1;
 	}
+
+	pvr_handle_t info_page = 0;
+	ret = PVRSRVAcquireInfoPage(fd, &info_page);
+	if (ret)
+	{
+		close(fd);
+		return -1;
+	}
+	Log("AcquireInfoPage %p\n", info_page);
+
+	if (info_page)
+	{
+		pvr_handle_t info_page_imported = 0;
+		uint64_t info_page_size = 0;
+		uint64_t info_page_align = 0;
+		ret = PVRSRVPMRLocalImportPMR(fd, info_page, &info_page_imported, &info_page_size, &info_page_align);
+		if (ret)
+		{
+			close(fd);
+			return -1;
+		}
+		Log("PMRLocalImportPMR(info_page) pmr %p size %lX align %lX\n", info_page_imported, info_page_size, info_page_align);
+
+		void *info_page_ptr = mmap(nullptr,
+			info_page_size,
+			PROT_READ,
+			MAP_SHARED,
+			fd,
+			(off_t)info_page_imported * info_page_align//<< log2_page_size
+			);
+		Log("mmap(info_page) %p\n", info_page_ptr);
+
+		if (info_page_ptr)
+		{
+			dump_hex((char*)info_page_ptr, info_page_size, 16);
+			int um_ret = munmap(info_page_ptr, info_page_size);
+			Log("munmap(info_page) %d\n", um_ret);
+		}
+
+		ret = PVRSRVPMRUnrefPMR(fd, info_page_imported);
+		if (ret)
+		{
+			close(fd);
+			return -1;
+		}
+		Log("PMRUnrefPMR(info_page)\n");
+	}
+
+	ret = PVRSRVReleaseInfoPage(fd, info_page);
+	if (ret)
+	{
+		close(fd);
+		return -1;
+	}
+	Log("ReleaseInfoPage\n");
 
 	uint32_t clock_speed = 0;
 	ret = PVRSRVGetDevClockSpeed(fd, &clock_speed);
