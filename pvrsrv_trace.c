@@ -268,12 +268,20 @@ void print_drm_version(int pid, __u64 src)
 	printf(" name \"%s\" date \"%s\" desc \"%s\"\n", name, date, desc);
 }
 
+void print_pvr_sync_rename_cmd(int pid, __u64 src)
+{
+	struct pvr_sync_rename_ioctl_data data = {0};
+	memcpy_from_trace(pid, src, &data, sizeof(data));
+
+	printf("pvr_sync_rename_ioctl: name \"%s\"\n", data.szName);
+}
+
 void print_pvrsrv_init(int pid, __u64 src)
 {
 	struct drm_pvr_srvkm_init_data data = {0};
 	memcpy_from_trace(pid, src, &data, sizeof(data));
 	
-	printf("drm_srvkm_init: %u (", data.init_module);
+	printf("drm_pvr_srvkm_init: %u (", data.init_module);
 
 	switch (data.init_module)
 	{
@@ -966,14 +974,17 @@ void print_syscall(struct ptrace_syscall_info *sci, struct ptrace_syscall_info *
 		{
 		case DRM_IOCTL_VERSION:
 			print_drm_version(pid, sci->entry.args[2]);
-		break;
+			break;
 		case DRM_IOCTL_PVR_SRVKM_INIT:
 		case DRM_IOCTL_SRVKM_INIT:
 			print_pvrsrv_init(pid, sci->entry.args[2]);
 			break;
 		case DRM_IOCTL_PVR_SRVKM_CMD:
 			print_pvrsrv_cmd(pid, sci->entry.args[2]);
-		break;
+			break;
+		case DRM_IOCTL_PVR_SYNC_RENAME_CMD:
+			print_pvr_sync_rename_cmd(pid, sci->entry.args[2]);
+			break;
 		}
 	}
 }
