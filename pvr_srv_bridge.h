@@ -167,6 +167,29 @@ struct pvr_srv_bridge_releaseglobaleventobject_ret
 } PACKED;
 
 
+struct pvr_srv_bridge_eventobjectopen_cmd
+{
+	pvr_handle_t event_object;
+} PACKED;
+
+struct pvr_srv_bridge_eventobjectopen_ret
+{
+	pvr_handle_t os_event;
+	pvr_srv_error error;
+} PACKED;
+
+
+struct pvr_srv_bridge_eventobjectclose_cmd
+{
+	pvr_handle_t os_event_km;
+} PACKED;
+
+struct pvr_srv_bridge_eventobjectclose_ret
+{
+	pvr_srv_error error;
+} PACKED;
+
+
 struct pvr_srv_bridge_getdevclockspeed_ret
 {
 	pvr_srv_error error;
@@ -659,6 +682,8 @@ struct pvr_srv_rgx_kick_ta3d2_ret
 // client
 pvr_srv_error PVRSRVConnect(int fd, uint64_t *packedBvnc, uint32_t *capabilityFlags, uint8_t *kernelArch);
 pvr_srv_error PVRSRVDisconnect(int fd);
+// EventObjectOpen
+// EventObjectClose
 pvr_srv_error PVRSRVGetDevClockSpeed(int fd, uint32_t *clock_speed);
 pvr_srv_error PVRSRVGetMultiCoreInfo(int fd, uint32_t caps_size, uint32_t *num_cores, uint64_t *caps);
 pvr_srv_error PVRSRVAcquireInfoPage(int fd, pvr_handle_t *out_pmr);

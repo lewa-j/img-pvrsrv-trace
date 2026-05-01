@@ -360,6 +360,28 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 		printf("pvr_srv_bridge_releaseglobaleventobject: global_event_object %p\n", din.global_event_object);
 		printf(" out: error %d\n", dout.error);
 	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SRVCORE && cmd->bridge_func_id == PVR_SRV_BRIDGE_SRVCORE_EVENTOBJECTOPEN)
+	{
+		struct pvr_srv_bridge_eventobjectopen_cmd din = {0};
+		struct pvr_srv_bridge_eventobjectopen_ret dout = {0};
+		VALIDATE_SIZES(pvr_srv_bridge_eventobjectopen);
+		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
+		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
+
+		printf("pvr_srv_bridge_eventobjectopen: event_object %p\n", din.event_object);
+		printf(" out: os_event %p error %d\n", dout.os_event, dout.error);
+	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SRVCORE && cmd->bridge_func_id == PVR_SRV_BRIDGE_SRVCORE_EVENTOBJECTCLOSE)
+	{
+		struct pvr_srv_bridge_eventobjectclose_cmd din = {0};
+		struct pvr_srv_bridge_eventobjectclose_ret dout = {0};
+		VALIDATE_SIZES(pvr_srv_bridge_eventobjectclose);
+		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
+		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
+
+		printf("pvr_srv_bridge_releaseglobaleventobject: os_event_km %p\n", din.os_event_km);
+		printf(" out: error %d\n", dout.error);
+	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SRVCORE && cmd->bridge_func_id == PVR_SRV_BRIDGE_SRVCORE_GETDEVCLOCKSPEED)
 	{
 		struct pvr_srv_bridge_getdevclockspeed_ret dout = {0};
