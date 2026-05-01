@@ -460,6 +460,7 @@ struct pvr_srv_devmem_x_int_map_pages_ret
 	pvr_srv_error error;
 } PACKED;
 
+//RGXTQ
 
 struct pvr_srv_rgx_submit_transfer2_cmd
 {
@@ -488,6 +489,26 @@ struct pvr_srv_rgx_submit_transfer2_ret
 	int32_t update_fence_2d;
 	int32_t update_fence_3d;
 } PACKED;
+
+
+struct pvr_srv_rgxtq_getsharedmemory_ret
+{
+	pvr_handle_t cli_pmr_mem;
+	pvr_srv_error error;
+} PACKED;
+
+
+struct pvr_srv_rgxtq_releasesharedmemory_cmd
+{
+	pvr_handle_t pmr_mem;
+} PACKED;
+
+struct pvr_srv_rgxtq_releasesharedmemory_ret
+{
+	pvr_srv_error error;
+} PACKED;
+
+//RGXTA3D
 
 struct pvr_srv_rgx_create_free_list_cmd
 {
@@ -630,3 +651,5 @@ pvr_srv_error PVRSRVHeapCfgHeapConfigName(int fd, uint32_t heap_config_index, ui
 pvr_srv_error PVRSRVHeapCfgHeapDetails(int fd, uint32_t heap_config_index, uint32_t heap_index, uint32_t name_size, char *name_buffer,
 pvr_dev_addr_t *base_addr, uint64_t *heap_size, uint64_t *reserved_size, uint32_t *log2_data_page_size, uint32_t *log2_import_alignment);
 
+//RGXTQGetSharedMemory
+//RGXTQReleaseSharedMemory
