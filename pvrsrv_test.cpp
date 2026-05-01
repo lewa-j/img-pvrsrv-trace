@@ -108,6 +108,29 @@
 // from img-rogue devicemem_utils.h
 #define PVR_DEVMEM_HEAPNAME_MAXLENGTH 160
 
+// from img-rogue info_page_defs.h
+#define INFO_PAGE_CHUNK_SIZE                        8
+#define INFO_PAGE_BLOCK_END(start,size)             ((start) + (size) * INFO_PAGE_CHUNK_SIZE)
+#define INFO_PAGE_ENTRY(start,index)                ((start) + (index))
+#define INFO_PAGE_SIZE_IN_BYTES(end)                ((end) * sizeof(uint32_t))
+
+#define INFO_PAGE_CACHEOP_BLOCK_START               0
+#define INFO_PAGE_CACHEOP_BLOCK_END                 INFO_PAGE_BLOCK_END(INFO_PAGE_CACHEOP_BLOCK_START, 1)
+#define INFO_PAGE_HWPERF_BLOCK_START                INFO_PAGE_CACHEOP_BLOCK_END
+#define INFO_PAGE_HWPERF_BLOCK_END                  INFO_PAGE_BLOCK_END(INFO_PAGE_HWPERF_BLOCK_START, 1)
+#define INFO_PAGE_TIMEOUT_BLOCK_START               INFO_PAGE_HWPERF_BLOCK_END
+#define INFO_PAGE_TIMEOUT_BLOCK_END                 INFO_PAGE_BLOCK_END(INFO_PAGE_TIMEOUT_BLOCK_START, 2)
+#define INFO_PAGE_BRIDGE_BLOCK_START                INFO_PAGE_TIMEOUT_BLOCK_END
+#define INFO_PAGE_BRIDGE_BLOCK_END                  INFO_PAGE_BLOCK_END(INFO_PAGE_BRIDGE_BLOCK_START, 1)
+#define INFO_PAGE_DEBUG_BLOCK_START                 INFO_PAGE_BRIDGE_BLOCK_END
+#define INFO_PAGE_DEBUG_BLOCK_END                   INFO_PAGE_BLOCK_END(INFO_PAGE_DEBUG_BLOCK_START, 1)
+#define INFO_PAGE_DEVMEM_BLOCK_START                INFO_PAGE_DEBUG_BLOCK_END
+#define INFO_PAGE_DEVMEM_BLOCK_END                  INFO_PAGE_BLOCK_END(INFO_PAGE_DEVMEM_BLOCK_START, 1)
+
+/* IMPORTANT: Make sure this always uses the last INFO_PAGE_[NAME]_BLOCK_END definition.*/
+#define INFO_PAGE_TOTAL_SIZE                        INFO_PAGE_SIZE_IN_BYTES(INFO_PAGE_DEVMEM_BLOCK_END)
+
+
 #define Log printf
 #define LogError printf
 
@@ -615,6 +638,8 @@ X(TFBC_LOSSY_GROUP_1)
 		return -1;
 	}
 
+	Log("INFO_PAGE_TOTAL_SIZE %zu\n", INFO_PAGE_TOTAL_SIZE);
+
 	pvr_handle_t info_page = 0;
 	ret = PVRSRVAcquireInfoPage(fd, &info_page);
 	if (ret)
@@ -623,6 +648,8 @@ X(TFBC_LOSSY_GROUP_1)
 		return -1;
 	}
 	Log("AcquireInfoPage %p\n", info_page);
+
+	const int log2_page_size = 12;//TODO get from os
 
 	if (info_page)
 	{
@@ -642,13 +669,13 @@ X(TFBC_LOSSY_GROUP_1)
 			PROT_READ,
 			MAP_SHARED,
 			fd,
-			(off_t)info_page_imported * info_page_align//<< log2_page_size
+			(off_t)info_page_imported << log2_page_size
 			);
 		Log("mmap(info_page) %p\n", info_page_ptr);
 
 		if (info_page_ptr)
 		{
-			dump_hex((char*)info_page_ptr, info_page_size, 16);
+			dump_hex((char*)info_page_ptr, INFO_PAGE_TOTAL_SIZE, 16);
 			int um_ret = munmap(info_page_ptr, info_page_size);
 			Log("munmap(info_page) %d\n", um_ret);
 		}
