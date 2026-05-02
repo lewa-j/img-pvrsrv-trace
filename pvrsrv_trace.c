@@ -387,7 +387,7 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
 		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
 
-		printf("pvr_srv_bridge_releaseglobaleventobject: os_event_km %p\n", din.os_event_km);
+		printf("pvr_srv_bridge_eventobjectclose: os_event_km %p\n", din.os_event_km);
 		printf(" out: error %d\n", dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SRVCORE && cmd->bridge_func_id == PVR_SRV_BRIDGE_SRVCORE_GETDEVCLOCKSPEED)
@@ -688,6 +688,20 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 			din.pmr, din.reservation, din.page_count, din.phys_page_offset, din.virt_page_offset, din.flags);
 		printf(" out: error %d\n", dout.error);
 	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_RGXTQ && cmd->bridge_func_id == PVR_SRV_BRIDGE_RGXTQ_RGXCREATETRANSFERCONTEXT)
+	{
+		struct pvr_srv_rgx_create_transfer_context_cmd din = {0};
+		struct pvr_srv_rgx_create_transfer_context_ret dout = {0};
+		VALIDATE_SIZES(pvr_srv_rgx_create_transfer_context);
+		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
+		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
+
+		printf("rgx_create_transfer_context:\n robustness_address 0x%lX priv_data %p reset_framework_cmd %p priority %d\n"
+			" context_flags 0x%X reset_framework_cmd_size 0x%X packed_ccb_size_u8888 0x%X\n",
+			din.robustness_address, din.priv_data, din.reset_framework_cmd, din.priority,
+			din.context_flags, din.reset_framework_cmd_size, din.packed_ccb_size_u8888);
+		printf(" out: transfer_context %p error %d\n", dout.transfer_context, dout.error);
+	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_RGXTQ && cmd->bridge_func_id == PVR_SRV_BRIDGE_RGXTQ_RGXSUBMITTRANSFER2)
 	{
 		struct pvr_srv_rgx_submit_transfer2_cmd din = {0};
@@ -696,7 +710,7 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
 		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
 
-		printf("pvr_srv_rgx_submit_transfer2:\n transfer_context %p client_update_count %p cmd_size %p sync_pmr_flags %p\n"
+		printf("rgx_submit_transfer2:\n transfer_context %p client_update_count %p cmd_size %p sync_pmr_flags %p\n"
 			" tq_prepare_flags %p update_sync_offset %p update_value %p fw_command %p\n"
 			" update_fence_name %p sync_pmrs %p update_ufo_sync_prim_block %p\n"
 			" update_timeline_2d %d update_timeline_3d %d check_fence %d\n"
@@ -714,7 +728,7 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 		struct pvr_srv_rgxtq_getsharedmemory_ret dout = {0};
 		VALIDATE_OUT_SIZE(pvr_srv_rgxtq_getsharedmemory);
 		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
-		printf("pvr_srv_rgxtq_getsharedmemory: out: cli_pmr_mem %p error %d\n",
+		printf("rgxtq_getsharedmemory: out: cli_pmr_mem %p error %d\n",
 			dout.cli_pmr_mem, dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_RGXTQ && cmd->bridge_func_id == PVR_SRV_BRIDGE_RGXTQ_RGXTQRELEASESHAREDMEMORY)
@@ -725,7 +739,7 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
 		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
 
-		printf("pvr_srv_rgxtq_releasesharedmemory: pmr_mem %p\n",din.pmr_mem);
+		printf("rgxtq_releasesharedmemory: pmr_mem %p\n",din.pmr_mem);
 		printf(" out: error %d\n", dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_RGXTA3D && cmd->bridge_func_id == PVR_SRV_BRIDGE_RGXTA3D_RGXCREATEHWRTDATASET)
@@ -736,7 +750,7 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
 		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
 
-		printf("pvr_srv_rgx_create_hwrt_dataset_cmd: flipped_multi_sample_ctl 0x%lX multi_sample_ctl 0x%lX hwrt_dataset %p\n"
+		printf("rgx_create_hwrt_dataset_cmd: flipped_multi_sample_ctl 0x%lX multi_sample_ctl 0x%lX hwrt_dataset %p\n"
 			" isp_merge: lower_x %u lower_y %u scale_x %u scale_y %u upper_x %u upper_y %u\n"
 			" isp_mtile_size %u mtile_stride %u ppp_screen %u rgn_header_size %u te_aa %u te_mtile1 %u te_mtile2 %u te_screen %u\n"
 			" tpc_size %u tpc_stride %u max_rts %u\n",

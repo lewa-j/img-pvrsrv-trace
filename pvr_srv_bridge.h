@@ -509,6 +509,24 @@ struct pvr_srv_devmem_x_int_map_pages_ret
 
 //RGXTQ
 
+struct pvr_srv_rgx_create_transfer_context_cmd
+{
+	uint64_t robustness_address;
+	pvr_handle_t priv_data;
+	uint8_t *reset_framework_cmd;
+	int32_t priority;
+	uint32_t context_flags;
+	uint32_t reset_framework_cmd_size;
+	uint32_t packed_ccb_size_u8888;
+} PACKED;
+
+struct pvr_srv_rgx_create_transfer_context_ret
+{
+	pvr_handle_t transfer_context;
+	pvr_srv_error error;
+} PACKED;
+
+
 struct pvr_srv_rgx_submit_transfer2_cmd
 {
 	pvr_handle_t transfer_context;
