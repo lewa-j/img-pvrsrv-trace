@@ -403,8 +403,8 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SRVCORE && cmd->bridge_func_id == PVR_SRV_BRIDGE_SRVCORE_RELEASEGLOBALEVENTOBJECT)
 	{
 		LOAD_CMD_DATA(pvr_srv_bridge_releaseglobaleventobject);
-		printf("pvr_srv_bridge_releaseglobaleventobject: global_event_object %p\n", din.global_event_object);
-		printf(" out: error %d\n", dout.error);
+		printf("pvr_srv_bridge_releaseglobaleventobject: global_event_object %p out: error %d\n",
+			din.global_event_object, dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SRVCORE && cmd->bridge_func_id == PVR_SRV_BRIDGE_SRVCORE_EVENTOBJECTOPEN)
 	{
@@ -415,8 +415,7 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SRVCORE && cmd->bridge_func_id == PVR_SRV_BRIDGE_SRVCORE_EVENTOBJECTCLOSE)
 	{
 		LOAD_CMD_DATA(pvr_srv_bridge_eventobjectclose);
-		printf("pvr_srv_bridge_eventobjectclose: os_event_km %p\n", din.os_event_km);
-		printf(" out: error %d\n", dout.error);
+		printf("pvr_srv_bridge_eventobjectclose: os_event_km %p out: error %d\n", din.os_event_km, dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SRVCORE && cmd->bridge_func_id == PVR_SRV_BRIDGE_SRVCORE_GETDEVCLOCKSPEED)
 	{
@@ -459,8 +458,7 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SRVCORE && cmd->bridge_func_id == PVR_SRV_BRIDGE_SRVCORE_RELEASEINFOPAGE)
 	{
 		LOAD_CMD_DATA(pvr_srv_bridge_releaseinfopage);
-		printf("pvr_srv_bridge_releaseinfopage: pmr %p\n", din.pmr);
-		printf(" out: error %d\n", dout.error);
+		printf("pvr_srv_bridge_releaseinfopage: pmr %p out: error %d\n", din.pmr, dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SYNC && cmd->bridge_func_id == PVR_SRV_BRIDGE_SYNC_ALLOCSYNCPRIMITIVEBLOCK)
 	{
@@ -476,9 +474,8 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SYNC && cmd->bridge_func_id == PVR_SRV_BRIDGE_SYNC_SYNCPRIMSET)
 	{
 		LOAD_CMD_DATA(pvr_srv_bridge_sync_prim_set);
-		printf("pvr_sync_prim_set: handle %p index 0x%X value 0x%X\n",
-			din.handle, din.index, din.value);
-		printf(" out: error %d\n", dout.error);
+		printf("pvr_sync_prim_set: handle %p index 0x%X value 0x%X out: error %d\n",
+			din.handle, din.index, din.value, dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SYNC && cmd->bridge_func_id == PVR_SRV_BRIDGE_SYNC_SYNCALLOCEVENT)
 	{
@@ -516,8 +513,7 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_PMRUNREFPMR)
 	{
 		LOAD_CMD_DATA(pvr_srv_pmr_unref_pmr);
-		printf("pvr_srv_pmr_unref_pmr: pmr %p\n", din.pmr);
-		printf(" out: error %d\n", dout.error);
+		printf("pvr_srv_pmr_unref_pmr: pmr %p out: error %d\n", din.pmr, dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_DEVMEMINTCTXCREATE)
 	{
