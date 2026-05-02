@@ -575,7 +575,7 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 
 		printf("pvr_srv_physmem_new_ram_backed_pmr: size 0x%" PRIX64 " mapping_table %p (%d)\n"
 			" annotation[%u] %p \"%s\"\n"
-			" log2_page_size %u phy_blocks %u virt_blocks %u pdump_flags 0x%X pid %u flags 0x%lX\n",
+			" log2_page_size %u phy_blocks %u virt_blocks %u pdump_flags 0x%X pid 0x%X flags 0x%lX\n",
 			din.size, din.mapping_table, mapping_table,
 			din.annotation_size, din.annotation, annotation,
 			din.log2_page_size, din.phy_blocks, din.virt_blocks, din.pdump_flags, din.pid, din.flags);
@@ -943,13 +943,13 @@ void print_syscall(struct ptrace_syscall_info *sci, struct ptrace_syscall_info *
 		__u64 c = sci->entry.args[1];
 		if (_IOC_TYPE(c) != DRM_IOCTL_BASE)
 		{
-			printf("== ioctl(%lld, 0x%llX(not drm), 0x%llX)",sci->entry.args[0], c, sci->entry.args[2]);
+			printf("== ioctl(0x%llX, 0x%llX(not drm), 0x%llX)",sci->entry.args[0], c, sci->entry.args[2]);
 		}
 		else
 		{
 			const char *name = drm_ioctl_to_str(c);
 			if (name)
-				printf("== ioctl(%lld, DRM %s, 0x%llX)", sci->entry.args[0], name, sci->entry.args[2]);
+				printf("== ioctl(0x%llX, DRM %s, 0x%llX)", sci->entry.args[0], name, sci->entry.args[2]);
 			else
 			{
 				int dir = _IOC_DIR(c);
