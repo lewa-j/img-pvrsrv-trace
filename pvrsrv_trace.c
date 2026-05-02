@@ -742,6 +742,20 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 		printf("rgxtq_releasesharedmemory: pmr_mem %p\n",din.pmr_mem);
 		printf(" out: error %d\n", dout.error);
 	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_RGXCMP && cmd->bridge_func_id == PVR_SRV_BRIDGE_RGXCMP_RGXCREATECOMPUTECONTEXT)
+	{
+		struct pvr_srv_rgx_create_compute_context_cmd din = {0};
+		struct pvr_srv_rgx_create_compute_context_ret dout = {0};
+		VALIDATE_SIZES(pvr_srv_rgx_create_compute_context);
+		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
+		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
+
+		printf("rgx_create_compute_context: robustness_address 0x%lX priv_data %p reset_framework_cmd %p static_compute_context_state %p\n"
+			"priority %d context_flags 0x%X reset_framework_cmd_size 0x%X max_deadline_ms %u packed_ccb_size 0x%X static_compute_context_state_size 0x%X\n",
+			din.robustness_address, din.priv_data, din.reset_framework_cmd, din.static_compute_context_state,
+			din.priority, din.context_flags, din.reset_framework_cmd_size, din.max_deadline_ms, din.packed_ccb_size, din.static_compute_context_state_size);
+		printf(" out: compute_context %p error %d\n", dout.compute_context, dout.error);
+	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_RGXTA3D && cmd->bridge_func_id == PVR_SRV_BRIDGE_RGXTA3D_RGXCREATEHWRTDATASET)
 	{
 		struct pvr_srv_rgx_create_hwrt_dataset_cmd din = {0};

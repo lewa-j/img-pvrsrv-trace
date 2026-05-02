@@ -125,6 +125,7 @@ typedef struct pvr_dev_addr
 
 typedef void * pvr_handle_t;
 
+// SRVCORE
 
 struct pvr_srv_bridge_connect_cmd
 {
@@ -240,7 +241,7 @@ struct pvr_srv_bridge_releaseinfopage_ret
 	pvr_srv_error error;
 } PACKED;
 
-//MM
+// MM
 
 struct pvr_srv_pmr_makelocalimporthandle_cmd
 {
@@ -507,7 +508,7 @@ struct pvr_srv_devmem_x_int_map_pages_ret
 	pvr_srv_error error;
 } PACKED;
 
-//RGXTQ
+// RGXTQ
 
 struct pvr_srv_rgx_create_transfer_context_cmd
 {
@@ -573,7 +574,29 @@ struct pvr_srv_rgxtq_releasesharedmemory_ret
 	pvr_srv_error error;
 } PACKED;
 
-//RGXTA3D
+// RGXCMP
+
+struct pvr_srv_rgx_create_compute_context_cmd
+{
+	uint64_t robustness_address;
+	pvr_handle_t priv_data;
+	uint8_t *reset_framework_cmd;
+	uint8_t *static_compute_context_state;
+	int32_t priority;
+	uint32_t context_flags;
+	uint32_t reset_framework_cmd_size;
+	uint32_t max_deadline_ms;
+	uint32_t packed_ccb_size;
+	uint32_t static_compute_context_state_size;
+} PACKED;
+
+struct pvr_srv_rgx_create_compute_context_ret
+{
+	pvr_handle_t compute_context;
+	pvr_srv_error error;
+} PACKED;
+
+// RGXTA3D
 
 struct pvr_srv_rgx_create_free_list_cmd
 {
