@@ -325,18 +325,22 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 		return false; \
 	}
 
-#define VALIDATE_SIZES(name) \
+#define LOAD_CMD_DATA(name) \
+	struct name##_cmd din = {0}; \
+	struct name##_ret dout = {0}; \
 	VALIDATE_IN_SIZE(name) \
-	VALIDATE_OUT_SIZE(name)
+	VALIDATE_OUT_SIZE(name) \
+	memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din)); \
+	memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
+
+#define LOAD_CMD_OUT_DATA(name) \
+	struct name##_ret dout = {0}; \
+	VALIDATE_OUT_SIZE(name); \
+	memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
 
 	if (cmd->bridge_id == PVR_SRV_BRIDGE_SRVCORE && cmd->bridge_func_id == PVR_SRV_BRIDGE_SRVCORE_CONNECT)
 	{
-		struct pvr_srv_bridge_connect_cmd din = {0};
-		struct pvr_srv_bridge_connect_ret dout = {0};
-		VALIDATE_SIZES(pvr_srv_bridge_connect);
-		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
-
+		LOAD_CMD_DATA(pvr_srv_bridge_connect);
 		printf("pvr_srv_bridge_connect: build_options 0x%X DDK_build %d DDK_version 0x%X flags 0x%X\n",
 			din.build_options, din.DDK_build, din.DDK_version, din.flags);
 		printf(" out: bvnc %lX error %d capability_flags 0x%X kernel_arch %dbit\n",
@@ -344,67 +348,41 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SRVCORE && cmd->bridge_func_id == PVR_SRV_BRIDGE_SRVCORE_DISCONNECT)
 	{
-		struct pvr_srv_bridge_disconnect_ret dout = {0};
-		VALIDATE_OUT_SIZE(pvr_srv_bridge_disconnect);
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
+		LOAD_CMD_OUT_DATA(pvr_srv_bridge_disconnect);
 		printf("pvr_srv_bridge_disconnect: out: error %d\n", dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SRVCORE && cmd->bridge_func_id == PVR_SRV_BRIDGE_SRVCORE_ACQUIREGLOBALEVENTOBJECT)
 	{
-		struct pvr_srv_bridge_acquireglobaleventobject_ret dout = {0};
-		VALIDATE_OUT_SIZE(pvr_srv_bridge_acquireglobaleventobject);
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
+		LOAD_CMD_OUT_DATA(pvr_srv_bridge_acquireglobaleventobject);
 		printf("pvr_srv_bridge_acquireglobaleventobject: out: global_event_object %p error %d\n",
 			dout.global_event_object, dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SRVCORE && cmd->bridge_func_id == PVR_SRV_BRIDGE_SRVCORE_RELEASEGLOBALEVENTOBJECT)
 	{
-		struct pvr_srv_bridge_releaseglobaleventobject_cmd din = {0};
-		struct pvr_srv_bridge_releaseglobaleventobject_ret dout = {0};
-		VALIDATE_SIZES(pvr_srv_bridge_releaseglobaleventobject);
-		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
-
+		LOAD_CMD_DATA(pvr_srv_bridge_releaseglobaleventobject);
 		printf("pvr_srv_bridge_releaseglobaleventobject: global_event_object %p\n", din.global_event_object);
 		printf(" out: error %d\n", dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SRVCORE && cmd->bridge_func_id == PVR_SRV_BRIDGE_SRVCORE_EVENTOBJECTOPEN)
 	{
-		struct pvr_srv_bridge_eventobjectopen_cmd din = {0};
-		struct pvr_srv_bridge_eventobjectopen_ret dout = {0};
-		VALIDATE_SIZES(pvr_srv_bridge_eventobjectopen);
-		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
-
+		LOAD_CMD_DATA(pvr_srv_bridge_eventobjectopen);
 		printf("pvr_srv_bridge_eventobjectopen: event_object %p\n", din.event_object);
 		printf(" out: os_event %p error %d\n", dout.os_event, dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SRVCORE && cmd->bridge_func_id == PVR_SRV_BRIDGE_SRVCORE_EVENTOBJECTCLOSE)
 	{
-		struct pvr_srv_bridge_eventobjectclose_cmd din = {0};
-		struct pvr_srv_bridge_eventobjectclose_ret dout = {0};
-		VALIDATE_SIZES(pvr_srv_bridge_eventobjectclose);
-		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
-
+		LOAD_CMD_DATA(pvr_srv_bridge_eventobjectclose);
 		printf("pvr_srv_bridge_eventobjectclose: os_event_km %p\n", din.os_event_km);
 		printf(" out: error %d\n", dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SRVCORE && cmd->bridge_func_id == PVR_SRV_BRIDGE_SRVCORE_GETDEVCLOCKSPEED)
 	{
-		struct pvr_srv_bridge_getdevclockspeed_ret dout = {0};
-		VALIDATE_OUT_SIZE(pvr_srv_bridge_getdevclockspeed);
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
+		LOAD_CMD_OUT_DATA(pvr_srv_bridge_getdevclockspeed);
 		printf("pvr_srv_bridge_getdevclockspeed: out: error %d clock_speed %d\n", dout.error, dout.clock_speed);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SRVCORE && cmd->bridge_func_id == PVR_SRV_BRIDGE_SRVCORE_ALIGNMENTCHECK)
 	{
-		struct pvr_srv_bridge_alignmentcheck_cmd din = {0};
-		struct pvr_srv_bridge_alignmentcheck_ret dout = {0};
-		VALIDATE_SIZES(pvr_srv_bridge_alignmentcheck);
-		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
-
+		LOAD_CMD_DATA(pvr_srv_bridge_alignmentcheck);
 		printf("pvr_srv_bridge_alignmentcheck: align_checks %p align_checks_size %d\n",
 			din.align_checks, din.align_checks_size);
 		printf(" out: error %d\n", dout.error);
@@ -425,127 +403,74 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SRVCORE && cmd->bridge_func_id == PVR_SRV_BRIDGE_SRVCORE_GETMULTICOREINFO)
 	{
-		struct pvr_srv_bridge_getmulticoreinfo_cmd din = {0};
-		struct pvr_srv_bridge_getmulticoreinfo_ret dout = {0};
-		VALIDATE_SIZES(pvr_srv_bridge_getmulticoreinfo);
-		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
-
+		LOAD_CMD_DATA(pvr_srv_bridge_getmulticoreinfo);
 		printf("pvr_srv_bridge_getmulticoreinfo: caps %p caps_size %d\n",
 			din.caps, din.caps_size);
 		printf(" out: caps %p error %d num_cores %d\n", dout.caps, dout.error, dout.num_cores);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SRVCORE && cmd->bridge_func_id == PVR_SRV_BRIDGE_SRVCORE_ACQUIREINFOPAGE)
 	{
-		struct pvr_srv_bridge_acquireinfopage_ret dout = {0};
-		VALIDATE_OUT_SIZE(pvr_srv_bridge_acquireinfopage);
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
+		LOAD_CMD_OUT_DATA(pvr_srv_bridge_acquireinfopage);
 		printf("pvr_srv_bridge_acquireinfopage: out: pmr %p error %d\n", dout.pmr, dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SRVCORE && cmd->bridge_func_id == PVR_SRV_BRIDGE_SRVCORE_RELEASEINFOPAGE)
 	{
-		struct pvr_srv_bridge_releaseinfopage_cmd din = {0};
-		struct pvr_srv_bridge_releaseinfopage_ret dout = {0};
-		VALIDATE_SIZES(pvr_srv_bridge_releaseinfopage);
-		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
-
+		LOAD_CMD_DATA(pvr_srv_bridge_releaseinfopage);
 		printf("pvr_srv_bridge_releaseinfopage: pmr %p\n", din.pmr);
 		printf(" out: error %d\n", dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_PMRMAKELOCALIMPORTHANDLE)
 	{
-		struct pvr_srv_pmr_makelocalimporthandle_cmd din = {0};
-		struct pvr_srv_pmr_makelocalimporthandle_ret dout = {0};
-		VALIDATE_SIZES(pvr_srv_pmr_makelocalimporthandle);
-		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
-
+		LOAD_CMD_DATA(pvr_srv_pmr_makelocalimporthandle);
 		printf("pvr_srv_pmr_makelocalimporthandle: buffer %p\n", din.buffer);
 		printf(" out: ext_mem %p error %d\n", dout.ext_mem, dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_PMRUNMAKELOCALIMPORTHANDLE)
 	{
-		struct pvr_srv_pmr_unmakelocalimporthandle_cmd din = {0};
-		struct pvr_srv_pmr_unmakelocalimporthandle_ret dout = {0};
-		VALIDATE_SIZES(pvr_srv_pmr_unmakelocalimporthandle);
-		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
-
+		LOAD_CMD_DATA(pvr_srv_pmr_unmakelocalimporthandle);
 		printf("pvr_srv_pmr_unmakelocalimporthandle: ext_mem %p\n", din.ext_mem);
 		printf(" out: error %d\n", dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_PMRLOCALIMPORTPMR)
 	{
-		struct pvr_srv_pmr_localimportpmr_cmd din = {0};
-		struct pvr_srv_pmr_localimportpmr_ret dout = {0};
-		VALIDATE_SIZES(pvr_srv_pmr_localimportpmr);
-		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
-
+		LOAD_CMD_DATA(pvr_srv_pmr_localimportpmr);
 		printf("pvr_srv_pmr_localimportpmr: ext_handle %p\n", din.ext_handle);
 		printf(" out: align 0x%lX size 0x%lX pmr %p error %d\n",
 			dout.align, dout.size, dout.pmr, dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_PMRUNREFPMR)
 	{
-		struct pvr_srv_pmr_unref_pmr_cmd din = {0};
-		struct pvr_srv_pmr_unref_pmr_ret dout = {0};
-		VALIDATE_SIZES(pvr_srv_pmr_unref_pmr);
-		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
-
+		LOAD_CMD_DATA(pvr_srv_pmr_unref_pmr);
 		printf("pvr_srv_pmr_unref_pmr: pmr %p\n", din.pmr);
 		printf(" out: error %d\n", dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_DEVMEMINTCTXCREATE)
 	{
-		struct pvr_srv_devmem_int_ctx_create_cmd din = {0};
-		struct pvr_srv_devmem_int_ctx_create_ret dout = {0};
-		VALIDATE_SIZES(pvr_srv_devmem_int_ctx_create);
-		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
-
+		LOAD_CMD_DATA(pvr_srv_devmem_int_ctx_create);
 		printf("pvr_srv_devmem_int_ctx_create: kernel_memory_ctx %d\n", din.kernel_memory_ctx);
 		printf(" out: server_memctx %p data %p error %d cpu_cache_line_size %d\n",
 			dout.server_memctx, dout.server_memctx_data, dout.error, dout.cpu_cache_line_size);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_DEVMEMINTCTXDESTROY)
 	{
-		struct pvr_srv_devmem_int_ctx_destroy_cmd din = {0};
-		struct pvr_srv_devmem_int_ctx_destroy_ret dout = {0};
-		VALIDATE_SIZES(pvr_srv_devmem_int_ctx_destroy);
-		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
-
+		LOAD_CMD_DATA(pvr_srv_devmem_int_ctx_destroy);
 		printf("pvr_srv_devmem_int_ctx_destroy: server_memctx %p\n", din.server_memctx);
 		printf(" out: error %d \n", dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_HEAPCFGHEAPCONFIGCOUNT)
 	{
-		struct pvr_srv_heap_cfg_count_ret dout = {0};
-		VALIDATE_OUT_SIZE(pvr_srv_heap_cfg_count);
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
+		LOAD_CMD_OUT_DATA(pvr_srv_heap_cfg_count);
 		printf("pvr_srv_heap_cfg_count: out: error %d heap_config_count %d\n", dout.error, dout.heap_config_count);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_HEAPCFGHEAPCOUNT)
 	{
-		struct pvr_srv_heap_count_cmd din = {0};
-		struct pvr_srv_heap_count_ret dout = {0};
-		VALIDATE_SIZES(pvr_srv_heap_count);
-		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
-
+		LOAD_CMD_DATA(pvr_srv_heap_count);
 		printf("pvr_srv_heap_count: heap_config_index %d\n", din.heap_config_index);
 		printf(" out: error %d heap_count %d\n", dout.error, dout.heap_count);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_HEAPCFGHEAPCONFIGNAME)
 	{
-		struct pvr_srv_heap_cfg_name_cmd din = {0};
-		struct pvr_srv_heap_cfg_name_ret dout = {0};
-		VALIDATE_SIZES(pvr_srv_heap_cfg_name);
-		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
+		LOAD_CMD_DATA(pvr_srv_heap_cfg_name);
 
 		char name[256] = {0};
 		memcpy_from_trace(pid, (__u64)din.config_name_buffer, name, i_min(din.config_name_bufer_size, sizeof(name) - 1));
@@ -556,11 +481,7 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_HEAPCFGHEAPDETAILS)
 	{
-		struct pvr_srv_heap_cfg_details_cmd din = {0};
-		struct pvr_srv_heap_cfg_details_ret dout = {0};
-		VALIDATE_SIZES(pvr_srv_heap_cfg_details);
-		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
+		LOAD_CMD_DATA(pvr_srv_heap_cfg_details);
 
 		char name[256] = {0};
 		memcpy_from_trace(pid, (__u64)din.buffer, name, i_min(din.buffer_size, sizeof(name) - 1));
@@ -572,23 +493,14 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_DEVMEMINTHEAPCREATE)
 	{
-		struct pvr_srv_devmem_int_heap_create_cmd din = {0};
-		struct pvr_srv_devmem_int_heap_create_ret dout = {0};
-		VALIDATE_SIZES(pvr_srv_devmem_int_heap_create);
-		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
-
+		LOAD_CMD_DATA(pvr_srv_devmem_int_heap_create);
 		printf("pvr_srv_devmem_int_heap_create: server_memctx %p heap_config_index %d heap_index %d\n",
 			din.server_memctx, din.heap_config_index, din.heap_index);
 		printf(" out: server_heap %p error %d\n", dout.server_heap, dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_PHYSMEMNEWRAMBACKEDPMR)
 	{
-		struct pvr_srv_physmem_new_ram_backed_pmr_cmd din = {0};
-		struct pvr_srv_physmem_new_ram_backed_pmr_ret dout = {0};
-		VALIDATE_SIZES(pvr_srv_physmem_new_ram_backed_pmr);
-		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
+		LOAD_CMD_DATA(pvr_srv_physmem_new_ram_backed_pmr);
 
 		uint32_t mapping_table = -1;
 		memcpy_from_trace(pid, (__u64)din.mapping_table, &mapping_table, sizeof(mapping_table));
@@ -606,35 +518,20 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_DEVMEMINTMAPPMR)
 	{
-		struct pvr_srv_devmem_int_map_pmr_cmd din = {0};
-		struct pvr_srv_devmem_int_map_pmr_ret dout = {0};
-		VALIDATE_SIZES(pvr_srv_devmem_int_map_pmr);
-		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
-
+		LOAD_CMD_DATA(pvr_srv_devmem_int_map_pmr);
 		printf("pvr_srv_devmem_int_map_pmr: pmr %p reservation %p\n", din.pmr, din.reservation);
 		printf(" out: error %d\n", dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_DEVMEMINTRESERVERANGE)
 	{
-		struct pvr_srv_devmem_int_reserve_range_cmd din = {0};
-		struct pvr_srv_devmem_int_reserve_range_ret dout = {0};
-		VALIDATE_SIZES(pvr_srv_devmem_int_reserve_range);
-		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
-
+		LOAD_CMD_DATA(pvr_srv_devmem_int_reserve_range);
 		printf("pvr_srv_devmem_int_reserve_range: address %p size 0x%zX serverHeap %p flags 0x%lX\n",
 			(void*)din.addr.addr, din.size, din.server_heap, din.flags);
 		printf(" out: reservation %p error %d\n", dout.reservation, dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_DEVMEMINTRESERVERANGEANDMAPPMR)
 	{
-		struct pvr_srv_devmem_int_reserve_range_and_map_pmr_cmd din = {0};
-		struct pvr_srv_devmem_int_reserve_range_and_map_pmr_ret dout = {0};
-		VALIDATE_SIZES(devmem_int_reserve_range_and_map_pmr);
-		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
-
+		LOAD_CMD_DATA(pvr_srv_devmem_int_reserve_range_and_map_pmr);
 		printf("devmem_int_reserve_range_and_map_pmr: address %p size 0x%zX serverHeap %p pmr %p flags 0x%lX\n",
 			(void*)din.address.addr, din.length, din.server_heap, din.pmr, din.flags);
 		printf(" out: reservation %p error %d\n",
@@ -642,12 +539,7 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_PHYSHEAPGETMEMINFO)
 	{
-		struct pvr_srv_physheap_getmeminfo_cmd din = {0};
-		struct pvr_srv_physheap_getmeminfo_ret dout = {0};
-		VALIDATE_SIZES(pvr_srv_physheap_getmeminfo);
-		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
-
+		LOAD_CMD_DATA(pvr_srv_physheap_getmeminfo);
 		printf("pvr_srv_physheap_getmeminfo: phys_heap_mem_stats %p phys_heap_id %p phys_heap_count %d\n",
 			din.phys_heap_mem_stats, din.phys_heap_id, din.phys_heap_count);
 		printf(" out: phys_heap_mem_stats %p error %d\n", dout.phys_heap_mem_stats, dout.error);
@@ -668,36 +560,21 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_DEVMEMXINTRESERVERANGE)
 	{
-		struct pvr_srv_devmem_x_int_reserve_range_cmd din = {0};
-		struct pvr_srv_devmem_x_int_reserve_range_ret dout = {0};
-		VALIDATE_SIZES(devmem_x_int_reserve_range);
-		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
-
+		LOAD_CMD_DATA(pvr_srv_devmem_x_int_reserve_range);
 		printf("devmem_x_int_reserve_range: address %p length 0x%zX serverHeap %p\n",
 			(void*)din.address.addr, din.length, din.server_heap);
 		printf(" out: reservation %p error %d\n", dout.reservation, dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_DEVMEMXINTMAPPAGES)
 	{
-		struct pvr_srv_devmem_x_int_map_pages_cmd din = {0};
-		struct pvr_srv_devmem_x_int_map_pages_ret dout = {0};
-		VALIDATE_SIZES(devmem_x_int_map_pages);
-		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
-
+		LOAD_CMD_DATA(pvr_srv_devmem_x_int_map_pages);
 		printf("devmem_x_int_map_pages: pmr %p reservation %p page_count %d phys_page_offset %d virt_page_offset %d flags 0x%lX\n",
 			din.pmr, din.reservation, din.page_count, din.phys_page_offset, din.virt_page_offset, din.flags);
 		printf(" out: error %d\n", dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_RGXTQ && cmd->bridge_func_id == PVR_SRV_BRIDGE_RGXTQ_RGXCREATETRANSFERCONTEXT)
 	{
-		struct pvr_srv_rgx_create_transfer_context_cmd din = {0};
-		struct pvr_srv_rgx_create_transfer_context_ret dout = {0};
-		VALIDATE_SIZES(pvr_srv_rgx_create_transfer_context);
-		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
-
+		LOAD_CMD_DATA(pvr_srv_rgx_create_transfer_context);
 		printf("rgx_create_transfer_context:\n robustness_address 0x%lX priv_data %p reset_framework_cmd %p priority %d\n"
 			" context_flags 0x%X reset_framework_cmd_size 0x%X packed_ccb_size_u8888 0x%X\n",
 			din.robustness_address, din.priv_data, din.reset_framework_cmd, din.priority,
@@ -706,12 +583,7 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_RGXTQ && cmd->bridge_func_id == PVR_SRV_BRIDGE_RGXTQ_RGXSUBMITTRANSFER2)
 	{
-		struct pvr_srv_rgx_submit_transfer2_cmd din = {0};
-		struct pvr_srv_rgx_submit_transfer2_ret dout = {0};
-		VALIDATE_SIZES(pvr_srv_rgx_submit_transfer2);
-		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
-
+		LOAD_CMD_DATA(pvr_srv_rgx_submit_transfer2);
 		printf("rgx_submit_transfer2:\n transfer_context %p client_update_count %p cmd_size %p sync_pmr_flags %p\n"
 			" tq_prepare_flags %p update_sync_offset %p update_value %p fw_command %p\n"
 			" update_fence_name %p sync_pmrs %p update_ufo_sync_prim_block %p\n"
@@ -727,31 +599,19 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_RGXTQ && cmd->bridge_func_id == PVR_SRV_BRIDGE_RGXTQ_RGXTQGETSHAREDMEMORY)
 	{
-		struct pvr_srv_rgxtq_getsharedmemory_ret dout = {0};
-		VALIDATE_OUT_SIZE(pvr_srv_rgxtq_getsharedmemory);
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
+		LOAD_CMD_OUT_DATA(pvr_srv_rgxtq_getsharedmemory);
 		printf("rgxtq_getsharedmemory: out: cli_pmr_mem %p error %d\n",
 			dout.cli_pmr_mem, dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_RGXTQ && cmd->bridge_func_id == PVR_SRV_BRIDGE_RGXTQ_RGXTQRELEASESHAREDMEMORY)
 	{
-		struct pvr_srv_rgxtq_releasesharedmemory_cmd din = {0};
-		struct pvr_srv_rgxtq_releasesharedmemory_ret dout = {0};
-		VALIDATE_SIZES(pvr_srv_rgxtq_releasesharedmemory);
-		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
-
+		LOAD_CMD_DATA(pvr_srv_rgxtq_releasesharedmemory);
 		printf("rgxtq_releasesharedmemory: pmr_mem %p\n",din.pmr_mem);
 		printf(" out: error %d\n", dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_RGXCMP && cmd->bridge_func_id == PVR_SRV_BRIDGE_RGXCMP_RGXCREATECOMPUTECONTEXT)
 	{
-		struct pvr_srv_rgx_create_compute_context_cmd din = {0};
-		struct pvr_srv_rgx_create_compute_context_ret dout = {0};
-		VALIDATE_SIZES(pvr_srv_rgx_create_compute_context);
-		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
-
+		LOAD_CMD_DATA(pvr_srv_rgx_create_compute_context);
 		printf("rgx_create_compute_context: robustness_address 0x%lX priv_data %p reset_framework_cmd %p static_compute_context_state %p\n"
 			"priority %d context_flags 0x%X reset_framework_cmd_size 0x%X max_deadline_ms %u packed_ccb_size 0x%X static_compute_context_state_size 0x%X\n",
 			din.robustness_address, din.priv_data, din.reset_framework_cmd, din.static_compute_context_state,
@@ -760,12 +620,7 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_RGXTA3D && cmd->bridge_func_id == PVR_SRV_BRIDGE_RGXTA3D_RGXCREATEHWRTDATASET)
 	{
-		struct pvr_srv_rgx_create_hwrt_dataset_cmd din = {0};
-		struct pvr_srv_rgx_create_hwrt_dataset_ret dout = {0};
-		VALIDATE_SIZES(pvr_srv_rgx_create_hwrt_dataset);
-		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
-
+		LOAD_CMD_DATA(pvr_srv_rgx_create_hwrt_dataset);
 		printf("rgx_create_hwrt_dataset_cmd: flipped_multi_sample_ctl 0x%lX multi_sample_ctl 0x%lX hwrt_dataset %p\n"
 			" isp_merge: lower_x %u lower_y %u scale_x %u scale_y %u upper_x %u upper_y %u\n"
 			" isp_mtile_size %u mtile_stride %u ppp_screen %u rgn_header_size %u te_aa %u te_mtile1 %u te_mtile2 %u te_screen %u\n"
@@ -827,12 +682,7 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 	}
 	else if(cmd->bridge_id == PVR_SRV_BRIDGE_RGXTA3D && cmd->bridge_func_id == PVR_SRV_BRIDGE_RGXTA3D_RGXKICKTA3D2)
 	{
-		struct pvr_srv_rgx_kick_ta3d2_cmd din = {0};
-		struct pvr_srv_rgx_kick_ta3d2_ret dout = {0};
-		VALIDATE_SIZES(pvr_srv_rgx_kick_ta3d2);
-		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
-
+		LOAD_CMD_DATA(pvr_srv_rgx_kick_ta3d2);
 		printf("pvr_srv_rgx_kick_ta3d2: deadline %ld hw_rt_dataset %p msaa_scratch_buffer %p pr_fence_ufo_sync_prim_block %p render_ctx %p zs_buffer %p\n"
 		" client_3d_update_sync_offset %p client_3d_update_value %p client_ta_fence_sync_offset %p client_ta_fence_value %p\n"
 		" client_ta_update_sync_offset %p client_ta_update_value %p sync_pmr_flags %p cmd_3d %p cmd_3d_pr %p cmd_ta %p\n"
@@ -874,12 +724,7 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_RGXTA3D && cmd->bridge_func_id == PVR_SRV_BRIDGE_RGXTA3D_RGXCREATEFREELIST)
 	{
-		struct pvr_srv_rgx_create_free_list_cmd din = {0};
-		struct pvr_srv_rgx_create_free_list_ret dout = {0};
-		VALIDATE_SIZES(pvr_srv_rgx_create_free_list);
-		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
-		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
-
+		LOAD_CMD_DATA(pvr_srv_rgx_create_free_list);
 		printf("rgx_create_free_list: free_list_reservation %p mem_ctx_priv_data %p global_free_list %p\n"
 			" grow_free_list_pages %u grow_param_threshold %u init_free_list_pages %u max_free_list_pages %u free_list_check %d\n",
 			din.free_list_reservation, din.mem_ctx_priv_data, din.global_free_list, din.grow_free_list_pages,
@@ -891,7 +736,10 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 	{
 		return false;
 	}
-#undef VALIDATE_SIZES
+#undef VALIDATE_IN_SIZE
+#undef VALIDATE_OUT_SIZE
+#undef LOAD_CMD_DATA
+#undef LOAD_CMD_OUT_DATA
 	return true;
 }
 
