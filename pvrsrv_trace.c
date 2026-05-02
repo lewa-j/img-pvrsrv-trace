@@ -851,7 +851,7 @@ void print_syscall(struct ptrace_syscall_info *sci, struct ptrace_syscall_info *
 		|| sci->entry.args[1] == DRM_IOCTL_PVR_SRVKM_INIT
 		|| sci->entry.args[1] == DRM_IOCTL_SRVKM_INIT))
 	{
-		printf("ioctl(%lld) ", sci->entry.args[0]);
+		printf("ioctl(0x%llX) ", sci->entry.args[0]);
 		print_drm_ioctl(pid, sci->entry.args[1], sci->entry.args[2]);
 		return;
 	}
@@ -1007,14 +1007,14 @@ int main(int argc, char **argv)
 				|| !strncmp(open_path, "/dev/dri/card0", sizeof(open_path))
 				|| !strncmp(open_path, "/dev/dri/card1", sizeof(open_path)))
 			{
-				printf("!!! open dri device = %lld\n", sci_exit.exit.rval);
+				printf("!!! open dri device = 0x%llX\n", sci_exit.exit.rval);
 				insert_new_fd(dri_fds, dri_fds_count, sci_exit.exit.rval);
 			}
 		}
 		else if (sci.entry.nr == SYS_close)
 		{
 			if (remove_fd(dri_fds, dri_fds_count, sci.entry.args[0]) != -1)
-				printf("!! closed dri device %lld\n", sci.entry.args[0]);
+				printf("!! closed dri device 0x%llX\n", sci.entry.args[0]);
 		}
 
 		ptrace(PTRACE_SYSCALL, child, NULL, NULL);
