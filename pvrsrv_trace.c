@@ -23,6 +23,35 @@
 #define DRM_IOCTL_SRVKM_INIT \
 	DRM_IOWR(DRM_COMMAND_BASE + DRM_PVR_SRVKM_INIT, struct drm_pvr_srvkm_init_data)
 
+const char *syscall_to_str(int n)
+{
+	switch (n)
+	{
+		case SYS_openat: return "openat";
+		case SYS_close: return "close";
+		case SYS_mmap: return "mmap";
+		case SYS_munmap: return "munmap";
+		case SYS_ioctl: return "ioctl";
+		case SYS_read: return "read";
+		case SYS_write: return "write";
+		case SYS_fstat: return "fstat";
+		case SYS_getpid: return "getpid";
+		case SYS_gettid: return "gettid";
+		case SYS_socket: return "socket";
+		case SYS_bind: return "bind";
+		case SYS_listen: return "listen";
+		case SYS_setsockopt: return "setsockopt";
+		case SYS_mprotect: return "mprotect";
+		case SYS_prctl: return "prctl";
+		case SYS_brk: return "brk";
+		case SYS_rt_sigaction: return "rt_sigaction";
+		case SYS_rt_sigprocmask: return "rt_sigprocmask";
+		case SYS_clone3: return "clone3";
+		case SYS_ppoll: return "ppoll";
+		case SYS_futex: return "futex";
+	}
+	return nullptr;
+}
 
 const char *srv_bridge_id_to_str(int b)
 {
@@ -835,11 +864,14 @@ bool print_drm_ioctl(int pid, __u64 c, __u64 src)
 void print_syscall(struct ptrace_syscall_info *sci, struct ptrace_syscall_info *sci_exit, int pid, const char *open_path)
 {
 #if 1
-	if (!(sci->entry.nr == SYS_openat || sci->entry.nr == SYS_close || sci->entry.nr == SYS_ioctl
-		 || sci->entry.nr == SYS_mmap || sci->entry.nr == SYS_munmap))
+	if (!(sci->entry.nr == SYS_openat || sci->entry.nr == SYS_close || sci->entry.nr == SYS_read || sci->entry.nr == SYS_write
+		 || sci->entry.nr == SYS_mmap || sci->entry.nr == SYS_munmap || sci->entry.nr == SYS_fstat || sci->entry.nr == SYS_ioctl
+		 || sci->entry.nr == SYS_socket || sci->entry.nr == SYS_setsockopt || sci->entry.nr == SYS_bind || sci->entry.nr == SYS_listen))
 		return;
 #endif
 	if (sci->entry.nr == SYS_openat && sci_exit->exit.is_error)
+		return;
+	if (sci->entry.nr == SYS_write && sci->entry.args[0] == 1)//stdout
 		return;
 
 	if (sci->entry.nr == SYS_ioctl && !sci_exit->exit.is_error
@@ -864,6 +896,18 @@ void print_syscall(struct ptrace_syscall_info *sci, struct ptrace_syscall_info *
 	{
 		printf("close(0x%llX)", sci->entry.args[0]);
 	}
+	else if (sci->entry.nr == SYS_read)
+	{
+		printf("read(0x%llX, buf 0x%llX, count 0x%llX)", sci->entry.args[0], sci->entry.args[1], sci->entry.args[2]);
+	}
+	else if (sci->entry.nr == SYS_write)
+	{
+		printf("write(0x%llX, buf 0x%llX, count 0x%llX)", sci->entry.args[0], sci->entry.args[1], sci->entry.args[2]);
+	}
+	else if (sci->entry.nr == SYS_fstat)
+	{
+		printf("fstat(0x%llX, buf 0x%llX)", sci->entry.args[0], sci->entry.args[1]);
+	}
 	else if (sci->entry.nr == SYS_mmap)
 	{
 		//TODO: PROT_READ|PROT_WRITE, MAP_SHARED
@@ -874,6 +918,25 @@ void print_syscall(struct ptrace_syscall_info *sci, struct ptrace_syscall_info *
 	else if (sci->entry.nr == SYS_munmap)
 	{
 		printf("munmap(addr 0x%llX, length 0x%llX)", sci->entry.args[0], sci->entry.args[1]);
+	}
+	else if (sci->entry.nr == SYS_socket)
+	{
+		printf("socket(domain 0x%llX, type 0x%llX, protocol 0x%llX)",
+			sci->entry.args[0], sci->entry.args[1], sci->entry.args[2]);
+	}
+	else if (sci->entry.nr == SYS_setsockopt)
+	{
+		printf("setsockopt(socket 0x%llX, level 0x%llX, option_name 0x%llX, option_value 0x%llX, option_len 0x%llX)",
+			sci->entry.args[0], sci->entry.args[1], sci->entry.args[2], sci->entry.args[3], sci->entry.args[4]);
+	}
+	else if (sci->entry.nr == SYS_bind)
+	{
+		printf("bind(socket 0x%llX, addr 0x%llX, addr_len 0x%llX)",
+			sci->entry.args[0], sci->entry.args[1], sci->entry.args[2]);
+	}
+	else if (sci->entry.nr == SYS_listen)
+	{
+		printf("listen(socket 0x%llX, backlog 0x%llX)", sci->entry.args[0], sci->entry.args[1]);
 	}
 	else if (sci->entry.nr == SYS_ioctl)
 	{
@@ -899,29 +962,21 @@ void print_syscall(struct ptrace_syscall_info *sci, struct ptrace_syscall_info *
 					dir_str = "R";
 				else if (dir == (_IOC_READ|_IOC_WRITE))
 					dir_str = "RW";
-				printf("== ioctl(%lld, 0x%llX(%s 0x%X %d), 0x%llX)",sci->entry.args[0], c, dir_str, (int)_IOC_NR(c), (int)_IOC_SIZE(c), sci->entry.args[2]);
+				printf("== ioctl(0x%llX, 0x%llX(%s 0x%X %d), 0x%llX)",sci->entry.args[0], c, dir_str, (int)_IOC_NR(c), (int)_IOC_SIZE(c), sci->entry.args[2]);
 			}
 		}
 	}
 	else
 	{
-		printf("== sycall %lld", sci->entry.nr);
-		if (sci->entry.nr == SYS_read)
-			printf(" read");
-		else if (sci->entry.nr == SYS_fstat)
-			printf(" fstat");
-		else if (sci->entry.nr == SYS_getpid)
-			printf(" getpid");
-		else if (sci->entry.nr == SYS_socket)
-			printf(" socket");
-		else if (sci->entry.nr == SYS_bind)
-			printf(" bind");
-		else if (sci->entry.nr == SYS_listen)
-			printf(" listen");
-		else if (sci->entry.nr == SYS_setsockopt)
-			printf(" setsockopt");
+		const char *scname = syscall_to_str(sci->entry.nr);
+		if (scname)
+			printf("%s", scname);
+		else
+			printf("== sycall %lld", sci->entry.nr);
 		printf("(");
-		constexpr int used_args = 6;
+		int used_args = 6;
+		if (sci->entry.nr == SYS_getpid)
+			used_args = 0;
 		for (int i = 0; i < used_args; i++)
 			printf("%lld%s", sci->entry.args[i], i == used_args - 1 ? "" : ", ");
 		printf(")");
@@ -982,12 +1037,12 @@ int main(int argc, char **argv)
 			strcpy_from_trace(child, sci.entry.args[1], open_path, sizeof(open_path));
 
 		ptrace(PTRACE_SYSCALL, child, NULL, NULL);
-		
+
 		if (!waitpid(child, &status, 0))
 			break;
 		if (WIFEXITED(status))
 			break;
-		
+
 		struct ptrace_syscall_info sci_exit;
 		r = ptrace(PTRACE_GET_SYSCALL_INFO, child, sizeof(sci_exit), &sci_exit);
 		if (sci_exit.op != PTRACE_SYSCALL_INFO_EXIT)
