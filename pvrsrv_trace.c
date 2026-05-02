@@ -602,6 +602,12 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 		printf(" out: reservation %p error %d\n",
 			dout.reservation, dout.error);
 	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_DEVMEMINTUNRESERVERANGE)
+	{
+		LOAD_CMD_DATA(pvr_srv_devmem_int_unreserve_range);
+		printf("devmem_int_unreserve_range: reservation %p", din.reservation);
+		printf(" out: error %d\n", dout.error);
+	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_PHYSHEAPGETMEMINFO)
 	{
 		LOAD_CMD_DATA(pvr_srv_physheap_getmeminfo);
@@ -630,11 +636,24 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 			(void*)din.address.addr, din.length, din.server_heap);
 		printf(" out: reservation %p error %d\n", dout.reservation, dout.error);
 	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_DEVMEMXINTUNRESERVERANGE)
+	{
+		LOAD_CMD_DATA(pvr_srv_devmem_x_int_unreserve_range);
+		printf("devmem_x_int_unreserve_range: reservation %p", din.reservation);
+		printf(" out: error %d\n", dout.error);
+	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_DEVMEMXINTMAPPAGES)
 	{
 		LOAD_CMD_DATA(pvr_srv_devmem_x_int_map_pages);
 		printf("devmem_x_int_map_pages: pmr %p reservation %p page_count %d phys_page_offset %d virt_page_offset %d flags 0x%lX\n",
 			din.pmr, din.reservation, din.page_count, din.phys_page_offset, din.virt_page_offset, din.flags);
+		printf(" out: error %d\n", dout.error);
+	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_DEVMEMXINTUNMAPPAGES)
+	{
+		LOAD_CMD_DATA(pvr_srv_devmem_x_int_unmap_pages);
+		printf("devmem_x_int_unmap_pages: reservation %p page_count %d virt_page_offset %d",
+			din.reservation, din.page_count, din.virt_page_offset);
 		printf(" out: error %d\n", dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_RGXTQ && cmd->bridge_func_id == PVR_SRV_BRIDGE_RGXTQ_RGXCREATETRANSFERCONTEXT)

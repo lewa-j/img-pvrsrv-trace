@@ -517,6 +517,17 @@ struct pvr_srv_devmem_int_reserve_range_and_map_pmr_ret
 } PACKED;
 
 
+struct pvr_srv_devmem_int_unreserve_range_cmd
+{
+	pvr_handle_t reservation;
+} PACKED;
+
+struct pvr_srv_devmem_int_unreserve_range_ret
+{
+	pvr_srv_error error;
+} PACKED;
+
+
 struct pvr_srv_devmem_x_int_reserve_range_cmd
 {
 	pvr_dev_addr_t address;
@@ -527,6 +538,17 @@ struct pvr_srv_devmem_x_int_reserve_range_cmd
 struct pvr_srv_devmem_x_int_reserve_range_ret
 {
 	pvr_handle_t reservation;
+	pvr_srv_error error;
+} PACKED;
+
+
+struct pvr_srv_devmem_x_int_unreserve_range_cmd
+{
+	pvr_handle_t reservation;
+} PACKED;
+
+struct pvr_srv_devmem_x_int_unreserve_range_ret
+{
 	pvr_srv_error error;
 } PACKED;
 
@@ -542,6 +564,19 @@ struct pvr_srv_devmem_x_int_map_pages_cmd
 } PACKED;
 
 struct pvr_srv_devmem_x_int_map_pages_ret
+{
+	pvr_srv_error error;
+} PACKED;
+
+
+struct pvr_srv_devmem_x_int_unmap_pages_cmd
+{
+	pvr_handle_t reservation;
+	uint32_t page_count;
+	uint32_t virt_page_offset;
+} PACKED;
+
+struct pvr_srv_devmem_x_int_unmap_pages_ret
 {
 	pvr_srv_error error;
 } PACKED;
