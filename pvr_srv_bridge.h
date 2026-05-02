@@ -241,6 +241,44 @@ struct pvr_srv_bridge_releaseinfopage_ret
 	pvr_srv_error error;
 } PACKED;
 
+// SYNC
+
+struct pvr_srv_bridge_alloc_sync_primitive_block_ret
+{
+	pvr_handle_t handle;
+	pvr_handle_t pmr;
+	pvr_srv_error error;
+	uint32_t size;
+	uint32_t addr;
+} PACKED;
+
+
+struct pvr_srv_bridge_sync_prim_set_cmd
+{
+	pvr_handle_t handle;
+	uint32_t index;
+	uint32_t value;
+} PACKED;
+
+struct pvr_srv_bridge_sync_prim_set_ret
+{
+	pvr_srv_error error;
+} PACKED;
+
+
+struct pvr_srv_bridge_sync_allocevent_cmd
+{
+	const char *class_name;
+	uint32_t class_name_size;
+	uint32_t fw_addr;
+	bool server_sync;
+} PACKED;
+
+struct pvr_srv_bridge_sync_allocevent_ret
+{
+	pvr_srv_error error;
+} PACKED;
+
 // MM
 
 struct pvr_srv_pmr_makelocalimporthandle_cmd

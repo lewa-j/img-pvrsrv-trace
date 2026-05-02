@@ -419,6 +419,28 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 		printf("pvr_srv_bridge_releaseinfopage: pmr %p\n", din.pmr);
 		printf(" out: error %d\n", dout.error);
 	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SYNC && cmd->bridge_func_id == PVR_SRV_BRIDGE_SYNC_ALLOCSYNCPRIMITIVEBLOCK)
+	{
+		LOAD_CMD_OUT_DATA(pvr_srv_bridge_alloc_sync_primitive_block);
+		printf("pvr_alloc_sync_primitive_block: out: handle %p pmr %p error %d size 0x%X addr 0x%X\n",
+			dout.handle, dout.pmr, dout.error, dout.size, dout.addr);
+	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SYNC && cmd->bridge_func_id == PVR_SRV_BRIDGE_SYNC_SYNCPRIMSET)
+	{
+		LOAD_CMD_DATA(pvr_srv_bridge_sync_prim_set);
+		printf("pvr_sync_prim_set: handle %p index 0x%X value 0x%X\n",
+			din.handle, din.index, din.value);
+		printf(" out: error %d\n", dout.error);
+	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_SYNC && cmd->bridge_func_id == PVR_SRV_BRIDGE_SYNC_SYNCALLOCEVENT)
+	{
+		LOAD_CMD_DATA(pvr_srv_bridge_sync_allocevent);
+		char class_name[2048] = {0};
+		memcpy_from_trace(pid, (__u64)din.class_name, class_name, i_min(din.class_name_size, sizeof(class_name) - 1));
+		printf("pvr_sync_allocevent: class_name[%d] %p \"%s\" fw_addr 0x%X server_sync %d\n",
+			din.class_name_size, din.class_name, class_name, din.fw_addr, din.server_sync);
+		printf(" out: error %d\n", dout.error);
+	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_PMRMAKELOCALIMPORTHANDLE)
 	{
 		LOAD_CMD_DATA(pvr_srv_pmr_makelocalimporthandle);
