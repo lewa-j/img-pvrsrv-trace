@@ -474,6 +474,18 @@ struct pvr_srv_devmem_int_heap_create_ret
 	pvr_srv_error error;
 } PACKED;
 
+
+struct pvr_srv_devmem_int_heap_destroy_cmd
+{
+	pvr_handle_t server_heap;
+} PACKED;
+
+struct pvr_srv_devmem_int_heap_destroy_ret
+{
+	pvr_srv_error error;
+} PACKED;
+
+
 struct pvr_srv_physmem_new_ram_backed_pmr_cmd
 {
 	uint64_t size;
@@ -623,6 +635,17 @@ struct pvr_srv_rgx_create_transfer_context_ret
 } PACKED;
 
 
+struct pvr_srv_rgx_destroy_transfer_context_cmd
+{
+	pvr_handle_t transfer_context;
+} PACKED;
+
+struct pvr_srv_rgx_destroy_transfer_context_ret
+{
+	pvr_srv_error error;
+} PACKED;
+
+
 struct pvr_srv_rgx_submit_transfer2_cmd
 {
 	pvr_handle_t transfer_context;
@@ -691,6 +714,17 @@ struct pvr_srv_rgx_create_compute_context_ret
 	pvr_srv_error error;
 } PACKED;
 
+
+struct pvr_srv_rgx_destroy_compute_context_cmd
+{
+	pvr_handle_t compute_context;
+} PACKED;
+
+struct pvr_srv_rgx_destroy_compute_context_ret
+{
+	pvr_srv_error error;
+} PACKED;
+
 // RGXTA3D
 
 struct pvr_srv_rgx_create_free_list_cmd
@@ -708,6 +742,17 @@ struct pvr_srv_rgx_create_free_list_cmd
 struct pvr_srv_rgx_create_free_list_ret
 {
 	pvr_handle_t cleanup_cookie;
+	pvr_srv_error error;
+} PACKED;
+
+
+struct pvr_srv_rgx_destroy_free_list_cmd
+{
+	pvr_handle_t cleanup_cookie;
+} PACKED;
+
+struct pvr_srv_rgx_destroy_free_list_ret
+{
 	pvr_srv_error error;
 } PACKED;
 
@@ -755,6 +800,17 @@ struct pvr_srv_rgx_create_hwrt_dataset_ret
 {
 	/* ROGUE_FWIF_NUM_RTDATAS sized array of handles. */
 	pvr_handle_t *hwrt_dataset;
+	pvr_srv_error error;
+} PACKED;
+
+
+struct pvr_srv_rgx_destroy_hwrt_dataset_cmd
+{
+	pvr_handle_t hwrt_dataset;
+} PACKED;
+
+struct pvr_srv_rgx_destroy_hwrt_dataset_ret
+{
 	pvr_srv_error error;
 } PACKED;
 
@@ -836,6 +892,17 @@ struct pvr_srv_rgx_create_render_context_cmd
 struct pvr_srv_rgx_create_render_context_ret
 {
 	pvr_handle_t render_context;
+	pvr_srv_error error;
+} PACKED;
+
+
+struct pvr_srv_rgx_destroy_render_context_cmd
+{
+	pvr_handle_t render_context;
+} PACKED;
+
+struct pvr_srv_rgx_destroy_render_context_ret
+{
 	pvr_srv_error error;
 } PACKED;
 

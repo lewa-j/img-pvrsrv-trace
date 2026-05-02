@@ -569,6 +569,11 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 			din.server_memctx, din.heap_config_index, din.heap_index);
 		printf(" out: server_heap %p error %d\n", dout.server_heap, dout.error);
 	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_DEVMEMINTHEAPDESTROY)
+	{
+		LOAD_CMD_DATA(pvr_srv_devmem_int_heap_destroy);
+		printf("pvr_srv_devmem_int_heap_destroy: server_heap %p out: error %d\n", din.server_heap, dout.error);
+	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_PHYSMEMNEWRAMBACKEDPMR)
 	{
 		LOAD_CMD_DATA(pvr_srv_physmem_new_ram_backed_pmr);
@@ -671,6 +676,11 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 			din.context_flags, din.reset_framework_cmd_size, din.packed_ccb_size_u8888);
 		printf(" out: transfer_context %p error %d\n", dout.transfer_context, dout.error);
 	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_RGXTQ && cmd->bridge_func_id == PVR_SRV_BRIDGE_RGXTQ_RGXDESTROYTRANSFERCONTEXT)
+	{
+		LOAD_CMD_DATA(pvr_srv_rgx_destroy_transfer_context);
+		printf("rgx_destroy_transfer_context: transfer_context %p out: error %d\n", din.transfer_context, dout.error);
+	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_RGXTQ && cmd->bridge_func_id == PVR_SRV_BRIDGE_RGXTQ_RGXSUBMITTRANSFER2)
 	{
 		LOAD_CMD_DATA(pvr_srv_rgx_submit_transfer2);
@@ -707,6 +717,11 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 			din.robustness_address, din.priv_data, din.reset_framework_cmd, din.static_compute_context_state,
 			din.priority, din.context_flags, din.reset_framework_cmd_size, din.max_deadline_ms, din.packed_ccb_size, din.static_compute_context_state_size);
 		printf(" out: compute_context %p error %d\n", dout.compute_context, dout.error);
+	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_RGXCMP && cmd->bridge_func_id == PVR_SRV_BRIDGE_RGXCMP_RGXDESTROYCOMPUTECONTEXT)
+	{
+		LOAD_CMD_DATA(pvr_srv_rgx_destroy_compute_context);
+		printf("rgx_destroy_compute_context: compute_context %p out: error %d\n", din.compute_context, dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_RGXTA3D && cmd->bridge_func_id == PVR_SRV_BRIDGE_RGXTA3D_RGXCREATEHWRTDATASET)
 	{
@@ -770,6 +785,11 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 		for (int i = 0; i < ROGUE_FWIF_NUM_RTDATAS; i++)
 			printf("  [%d]: %p\n", i, hwrt_dataset[i]);
 	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_RGXTA3D && cmd->bridge_func_id == PVR_SRV_BRIDGE_RGXTA3D_RGXDESTROYHWRTDATASET)
+	{
+		LOAD_CMD_DATA(pvr_srv_rgx_destroy_hwrt_dataset);
+		printf("rgx_destroy_hwrt_dataset: hwrt_dataset %p out: error %d\n", din.hwrt_dataset, dout.error);
+	}
 	else if(cmd->bridge_id == PVR_SRV_BRIDGE_RGXTA3D && cmd->bridge_func_id == PVR_SRV_BRIDGE_RGXTA3D_RGXKICKTA3D2)
 	{
 		LOAD_CMD_DATA(pvr_srv_rgx_kick_ta3d2);
@@ -822,6 +842,11 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 		printf(" out: cleanup_cookie %p error %d\n",
 			dout.cleanup_cookie, dout.error);
 	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_RGXTA3D && cmd->bridge_func_id == PVR_SRV_BRIDGE_RGXTA3D_RGXDESTROYFREELIST)
+	{
+		LOAD_CMD_DATA(pvr_srv_rgx_destroy_free_list);
+		printf("rgx_destroy_free_list: cleanup_cookie %p out: error %d\n", din.cleanup_cookie, dout.error);
+	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_RGXTA3D && cmd->bridge_func_id == PVR_SRV_BRIDGE_RGXTA3D_RGXCREATERENDERCONTEXT)
 	{
 		LOAD_CMD_DATA(pvr_srv_rgx_create_render_context);
@@ -832,6 +857,11 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 			din.priority, din.context_flags, din.reset_framework_cmd_size, din.max_3d_deadline_ms, din.max_ta_deadline_ms,
 			din.packed_ccb_size, din.static_render_context_state_size, din.call_stack_depth);
 		printf(" out: render_context %p error %d\n", dout.render_context, dout.error);
+	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_RGXTA3D && cmd->bridge_func_id == PVR_SRV_BRIDGE_RGXTA3D_RGXDESTROYRENDERCONTEXT)
+	{
+		LOAD_CMD_DATA(pvr_srv_rgx_destroy_render_context);
+		printf("rgx_destroy_render_context: render_context %p out: error %d\n", din.render_context, dout.error);
 	}
 	else
 	{
