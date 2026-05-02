@@ -613,7 +613,7 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 	{
 		LOAD_CMD_DATA(pvr_srv_rgx_create_compute_context);
 		printf("rgx_create_compute_context: robustness_address 0x%lX priv_data %p reset_framework_cmd %p static_compute_context_state %p\n"
-			"priority %d context_flags 0x%X reset_framework_cmd_size 0x%X max_deadline_ms %u packed_ccb_size 0x%X static_compute_context_state_size 0x%X\n",
+			" priority %d context_flags 0x%X reset_framework_cmd_size 0x%X max_deadline_ms %u packed_ccb_size 0x%X static_compute_context_state_size 0x%X\n",
 			din.robustness_address, din.priv_data, din.reset_framework_cmd, din.static_compute_context_state,
 			din.priority, din.context_flags, din.reset_framework_cmd_size, din.max_deadline_ms, din.packed_ccb_size, din.static_compute_context_state_size);
 		printf(" out: compute_context %p error %d\n", dout.compute_context, dout.error);
@@ -731,6 +731,17 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 			din.grow_param_threshold, din.init_free_list_pages, din.max_free_list_pages, din.free_list_check);
 		printf(" out: cleanup_cookie %p error %d\n",
 			dout.cleanup_cookie, dout.error);
+	}
+	else if (cmd->bridge_id == PVR_SRV_BRIDGE_RGXTA3D && cmd->bridge_func_id == PVR_SRV_BRIDGE_RGXTA3D_RGXCREATERENDERCONTEXT)
+	{
+		LOAD_CMD_DATA(pvr_srv_rgx_create_render_context);
+		printf("rgx_create_render_context: vdm_callstack_addr %p robustness_address 0x%lX priv_data %p reset_framework_cmd %p static_render_context_state %p\n"
+			" priority %d context_flags 0x%X reset_framework_cmd_size 0x%X max_3d_deadline_ms %u max_ta_deadline_ms %u\n"
+			" packed_ccb_size 0x%X static_render_context_state_size 0x%X call_stack_depth %d\n",
+			(void*)din.vdm_callstack_addr.addr, din.robustness_address, din.priv_data, din.reset_framework_cmd, din.static_render_context_state,
+			din.priority, din.context_flags, din.reset_framework_cmd_size, din.max_3d_deadline_ms, din.max_ta_deadline_ms,
+			din.packed_ccb_size, din.static_render_context_state_size, din.call_stack_depth);
+		printf(" out: render_context %p error %d\n", dout.render_context, dout.error);
 	}
 	else
 	{

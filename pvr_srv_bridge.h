@@ -634,9 +634,9 @@ struct pvr_srv_rgx_create_hwrt_dataset_cmd
 	/* ROGUE_FWIF_NUM_GEOMDATAS sized array. */
 	const pvr_dev_addr_t *vheap_table_dev_adds;
 	/* ROGUE_FWIF_NUM_RTDATAS sized array of handles. */
-	pvr_handle_t*hwrt_dataset;
+	pvr_handle_t *hwrt_dataset;
 	/* ROGUE_FWIF_NUM_RTDATA_FREELISTS size array of handles. */
-	pvr_handle_t*free_lists;
+	pvr_handle_t *free_lists;
 	uint32_t isp_merge_lower_x;
 	uint32_t isp_merge_lower_y;
 	uint32_t isp_merge_scale_x;
@@ -659,7 +659,7 @@ struct pvr_srv_rgx_create_hwrt_dataset_cmd
 struct pvr_srv_rgx_create_hwrt_dataset_ret
 {
 	/* ROGUE_FWIF_NUM_RTDATAS sized array of handles. */
-	pvr_handle_t*hwrt_dataset;
+	pvr_handle_t *hwrt_dataset;
 	pvr_srv_error error;
 } PACKED;
 
@@ -670,7 +670,7 @@ struct pvr_srv_rgx_kick_ta3d2_cmd
 	pvr_handle_t hw_rt_dataset;
 	void *msaa_scratch_buffer;
 	void *pr_fence_ufo_sync_prim_block;
-	void *render_ctx;
+	pvr_handle_t render_ctx;
 	void *zs_buffer;
 	uint32_t *client_3d_update_sync_offset;
 	uint32_t *client_3d_update_value;
@@ -719,6 +719,31 @@ struct pvr_srv_rgx_kick_ta3d2_ret
 	int32_t update_fence;
 	int32_t update_fence_3d;
 } PACKED;
+
+
+struct pvr_srv_rgx_create_render_context_cmd
+{
+	pvr_dev_addr_t vdm_callstack_addr;
+	uint64_t robustness_address;
+	pvr_handle_t priv_data;
+	uint8_t *reset_framework_cmd;
+	uint8_t *static_render_context_state;
+	int32_t priority;
+	uint32_t context_flags;
+	uint32_t reset_framework_cmd_size;
+	uint32_t max_3d_deadline_ms;
+	uint32_t max_ta_deadline_ms;
+	uint32_t packed_ccb_size;
+	uint32_t static_render_context_state_size;
+	uint32_t call_stack_depth;
+} PACKED;
+
+struct pvr_srv_rgx_create_render_context_ret
+{
+	pvr_handle_t render_context;
+	pvr_srv_error error;
+} PACKED;
+
 
 // client
 pvr_srv_error PVRSRVConnect(int fd, uint64_t *packedBvnc, uint32_t *capabilityFlags, uint8_t *kernelArch);
