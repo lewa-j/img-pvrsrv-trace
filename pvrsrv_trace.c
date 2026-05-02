@@ -596,10 +596,12 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 		char annotation[2048] = {0};
 		memcpy_from_trace(pid, (__u64)din.annotation, annotation, i_min(din.annotation_size, sizeof(annotation) - 1));
 
-		printf("pvr_srv_physmem_new_ram_backed_pmr:\n size 0x%" PRIX64 " mapping_table %p (%d)\n annotation %p \"%s\" size %u\n"
+		printf("pvr_srv_physmem_new_ram_backed_pmr: size 0x%" PRIX64 " mapping_table %p (%d)\n"
+			" annotation[%u] %p \"%s\"\n"
 			" log2_page_size %u phy_blocks %u virt_blocks %u pdump_flags 0x%X pid %u flags 0x%lX\n",
-			din.size,din.mapping_table, mapping_table, din.annotation, annotation, din.annotation_size, din.log2_page_size,
-			din.phy_blocks, din.virt_blocks, din.pdump_flags, din.pid, din.flags);
+			din.size, din.mapping_table, mapping_table,
+			din.annotation_size, din.annotation, annotation,
+			din.log2_page_size, din.phy_blocks, din.virt_blocks, din.pdump_flags, din.pid, din.flags);
 		printf(" out: pmr %p error %d out_flags 0x%lX\n", dout.pmr, dout.error, dout.out_flags);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_DEVMEMINTMAPPMR)
@@ -610,7 +612,7 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
 		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
 
-		printf("pvr_srv_devmem_int_map_pmr:\n pmr %p reservation %p\n", din.pmr, din.reservation);
+		printf("pvr_srv_devmem_int_map_pmr: pmr %p reservation %p\n", din.pmr, din.reservation);
 		printf(" out: error %d\n", dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_DEVMEMINTRESERVERANGE)
@@ -621,20 +623,20 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
 		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
 
-		printf("pvr_srv_devmem_int_reserve_range:\n address %p size 0x%zX serverHeap %p flags 0x%lX\n",
-			(void*)din.addr.addr,din.size,din.server_heap,din.flags);
+		printf("pvr_srv_devmem_int_reserve_range: address %p size 0x%zX serverHeap %p flags 0x%lX\n",
+			(void*)din.addr.addr, din.size, din.server_heap, din.flags);
 		printf(" out: reservation %p error %d\n", dout.reservation, dout.error);
 	}
 	else if (cmd->bridge_id == PVR_SRV_BRIDGE_MM && cmd->bridge_func_id == PVR_SRV_BRIDGE_MM_DEVMEMINTRESERVERANGEANDMAPPMR)
 	{
 		struct pvr_srv_devmem_int_reserve_range_and_map_pmr_cmd din = {0};
 		struct pvr_srv_devmem_int_reserve_range_and_map_pmr_ret dout = {0};
-		VALIDATE_SIZES(DevmemIntReserveRangeAndMapPMR);
+		VALIDATE_SIZES(devmem_int_reserve_range_and_map_pmr);
 		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
 		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
 
-		printf("DevmemIntReserveRangeAndMapPMR:\n address %p size 0x%zX serverHeap %p pmr %p flags 0x%lX\n",
-			(void*)din.address.addr,din.length,din.server_heap,din.pmr,din.flags);
+		printf("devmem_int_reserve_range_and_map_pmr: address %p size 0x%zX serverHeap %p pmr %p flags 0x%lX\n",
+			(void*)din.address.addr, din.length, din.server_heap, din.pmr, din.flags);
 		printf(" out: reservation %p error %d\n",
 			dout.reservation, dout.error);
 	}
@@ -668,11 +670,11 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 	{
 		struct pvr_srv_devmem_x_int_reserve_range_cmd din = {0};
 		struct pvr_srv_devmem_x_int_reserve_range_ret dout = {0};
-		VALIDATE_SIZES(DevmemXIntReserveRange);
+		VALIDATE_SIZES(devmem_x_int_reserve_range);
 		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
 		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
 
-		printf("DevmemXIntReserveRange: address %p length 0x%zX serverHeap %p\n",
+		printf("devmem_x_int_reserve_range: address %p length 0x%zX serverHeap %p\n",
 			(void*)din.address.addr, din.length, din.server_heap);
 		printf(" out: reservation %p error %d\n", dout.reservation, dout.error);
 	}
@@ -680,11 +682,11 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 	{
 		struct pvr_srv_devmem_x_int_map_pages_cmd din = {0};
 		struct pvr_srv_devmem_x_int_map_pages_ret dout = {0};
-		VALIDATE_SIZES(DevmemXIntMapPages);
+		VALIDATE_SIZES(devmem_x_int_map_pages);
 		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
 		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
 
-		printf("DevmemXIntMapPages:\n pmr %p reservation %p page_count %d phys_page_offset %d virt_page_offset %d flags 0x%lX\n",
+		printf("devmem_x_int_map_pages: pmr %p reservation %p page_count %d phys_page_offset %d virt_page_offset %d flags 0x%lX\n",
 			din.pmr, din.reservation, din.page_count, din.phys_page_offset, din.virt_page_offset, din.flags);
 		printf(" out: error %d\n", dout.error);
 	}
@@ -878,8 +880,8 @@ bool print_pvr_srv_cmd_data(int pid, struct drm_pvr_srvkm_cmd *cmd)
 		memcpy_from_trace(pid, cmd->in_data_ptr, &din, sizeof(din));
 		memcpy_from_trace(pid, cmd->out_data_ptr, &dout, sizeof(dout));
 
-		printf("rgx_create_free_list:\n free_list_reservation %p\n mem_ctx_priv_data %p\n global_free_list %p\n"
-			" grow_free_list_pages %u\n grow_param_threshold %u\n init_free_list_pages %u\n max_free_list_pages %u\n free_list_check %d\n",
+		printf("rgx_create_free_list: free_list_reservation %p mem_ctx_priv_data %p global_free_list %p\n"
+			" grow_free_list_pages %u grow_param_threshold %u init_free_list_pages %u max_free_list_pages %u free_list_check %d\n",
 			din.free_list_reservation, din.mem_ctx_priv_data, din.global_free_list, din.grow_free_list_pages,
 			din.grow_param_threshold, din.init_free_list_pages, din.max_free_list_pages, din.free_list_check);
 		printf(" out: cleanup_cookie %p error %d\n",
@@ -906,6 +908,29 @@ void print_pvrsrv_cmd(int pid, __u64 src)
 	}
 }
 
+bool print_drm_ioctl(int pid, __u64 c, __u64 src)
+{
+	switch (c)
+	{
+	case DRM_IOCTL_VERSION:
+		print_drm_version(pid, src);
+		break;
+	case DRM_IOCTL_PVR_SRVKM_INIT:
+	case DRM_IOCTL_SRVKM_INIT:
+		print_pvrsrv_init(pid, src);
+		break;
+	case DRM_IOCTL_PVR_SRVKM_CMD:
+		print_pvrsrv_cmd(pid, src);
+		break;
+	case DRM_IOCTL_PVR_SYNC_RENAME_CMD:
+		print_pvr_sync_rename_cmd(pid, src);
+		break;
+	default:
+		return false;
+	}
+	return true;
+}
+
 void print_syscall(struct ptrace_syscall_info *sci, struct ptrace_syscall_info *sci_exit, int pid, const char *open_path)
 {
 #if 1
@@ -916,44 +941,49 @@ void print_syscall(struct ptrace_syscall_info *sci, struct ptrace_syscall_info *
 	if (sci->entry.nr == SYS_openat && sci_exit->exit.is_error)
 		return;
 
-	if (sci->entry.nr == SYS_ioctl && sci->entry.args[1] == DRM_IOCTL_PVR_SRVKM_CMD && !sci_exit->exit.is_error)
+	if (sci->entry.nr == SYS_ioctl && !sci_exit->exit.is_error
+		&& (sci->entry.args[1] == DRM_IOCTL_VERSION
+		|| sci->entry.args[1] == DRM_IOCTL_PVR_SRVKM_CMD
+		|| sci->entry.args[1] == DRM_IOCTL_PVR_SRVKM_INIT
+		|| sci->entry.args[1] == DRM_IOCTL_SRVKM_INIT
+		|| sci->entry.args[1] == DRM_IOCTL_PVR_SYNC_RENAME_CMD))
 	{
 		printf("ioctl(%lld) ", sci->entry.args[0]);
-		print_pvrsrv_cmd(pid, sci->entry.args[2]);
+		print_drm_ioctl(pid, sci->entry.args[1], sci->entry.args[2]);
 		return;
 	}
 
 	if (sci->entry.nr == SYS_openat)
 	{
-		printf(" openat(%lld, \"%s\", 0x%llX)", sci->entry.args[0], open_path, sci->entry.args[2]);
+		printf("openat(%lld, \"%s\", 0x%llX)", sci->entry.args[0], open_path, sci->entry.args[2]);
 	}
 	else if (sci->entry.nr == SYS_close)
 	{
-		printf(" close(0x%llX)", sci->entry.args[0]);
+		printf("close(0x%llX)", sci->entry.args[0]);
 	}
 	else if (sci->entry.nr == SYS_mmap)
 	{
 		//TODO: PROT_READ|PROT_WRITE, MAP_SHARED
-		printf(" mmap(addr 0x%llX, length 0x%llX, prot 0x%llX, flags 0x%llX, fd 0x%llX, offset 0x%llX)",
+		printf("mmap(addr 0x%llX, length 0x%llX, prot 0x%llX, flags 0x%llX, fd 0x%llX, offset 0x%llX)",
 			sci->entry.args[0], sci->entry.args[1], sci->entry.args[2],
 			sci->entry.args[3], sci->entry.args[4], sci->entry.args[5]);
 	}
 	else if (sci->entry.nr == SYS_munmap)
 	{
-		printf(" munmap(addr 0x%llX, length 0x%llX)", sci->entry.args[0], sci->entry.args[1]);
+		printf("munmap(addr 0x%llX, length 0x%llX)", sci->entry.args[0], sci->entry.args[1]);
 	}
 	else if (sci->entry.nr == SYS_ioctl)
 	{
 		__u64 c = sci->entry.args[1];
 		if (_IOC_TYPE(c) != DRM_IOCTL_BASE)
 		{
-			printf(" ioctl(%lld, 0x%llX(not drm), 0x%llX)",sci->entry.args[0], c, sci->entry.args[2]);
+			printf("== ioctl(%lld, 0x%llX(not drm), 0x%llX)",sci->entry.args[0], c, sci->entry.args[2]);
 		}
 		else
 		{
 			const char *name = drm_ioctl_to_str(c);
 			if (name)
-				printf(" ioctl(%lld, DRM %s, 0x%llX)", sci->entry.args[0], name, sci->entry.args[2]);
+				printf("== ioctl(%lld, DRM %s, 0x%llX)", sci->entry.args[0], name, sci->entry.args[2]);
 			else
 			{
 				int dir = _IOC_DIR(c);
@@ -966,13 +996,13 @@ void print_syscall(struct ptrace_syscall_info *sci, struct ptrace_syscall_info *
 					dir_str = "R";
 				else if (dir == (_IOC_READ|_IOC_WRITE))
 					dir_str = "RW";
-				printf(" ioctl(%lld, 0x%llX(%s 0x%X %d), 0x%llX)",sci->entry.args[0], c, dir_str, (int)_IOC_NR(c), (int)_IOC_SIZE(c), sci->entry.args[2]);
+				printf("== ioctl(%lld, 0x%llX(%s 0x%X %d), 0x%llX)",sci->entry.args[0], c, dir_str, (int)_IOC_NR(c), (int)_IOC_SIZE(c), sci->entry.args[2]);
 			}
 		}
 	}
 	else
 	{
-		printf("sycall %lld", sci->entry.nr);
+		printf("== sycall %lld", sci->entry.nr);
 		if (sci->entry.nr == SYS_read)
 			printf(" read");
 		else if (sci->entry.nr == SYS_fstat)
@@ -998,22 +1028,7 @@ void print_syscall(struct ptrace_syscall_info *sci, struct ptrace_syscall_info *
 	
 	if (sci->entry.nr == SYS_ioctl)
 	{
-		switch (sci->entry.args[1])
-		{
-		case DRM_IOCTL_VERSION:
-			print_drm_version(pid, sci->entry.args[2]);
-			break;
-		case DRM_IOCTL_PVR_SRVKM_INIT:
-		case DRM_IOCTL_SRVKM_INIT:
-			print_pvrsrv_init(pid, sci->entry.args[2]);
-			break;
-		case DRM_IOCTL_PVR_SRVKM_CMD:
-			print_pvrsrv_cmd(pid, sci->entry.args[2]);
-			break;
-		case DRM_IOCTL_PVR_SYNC_RENAME_CMD:
-			print_pvr_sync_rename_cmd(pid, sci->entry.args[2]);
-			break;
-		}
+		print_drm_ioctl(pid, sci->entry.args[1], sci->entry.args[2]);
 	}
 }
 
