@@ -268,19 +268,33 @@ void print_drm_version(int pid, __u64 src)
 	printf(" name \"%s\" date \"%s\" desc \"%s\"\n", name, date, desc);
 }
 
-void print_pvr_sync_rename_cmd(int pid, __u64 src)
+void print_pvr_sync_rename(int pid, __u64 src)
 {
 	struct pvr_sync_rename_ioctl_data data = {0};
 	memcpy_from_trace(pid, src, &data, sizeof(data));
+	printf("pvr_sync_rename: name \"%s\"\n", data.szName);
+}
 
-	printf("pvr_sync_rename_ioctl: name \"%s\"\n", data.szName);
+void print_pvr_sw_sync_create_fence(int pid, __u64 src)
+{
+	struct pvr_sw_sync_create_fence_data data = {0};
+	memcpy_from_trace(pid, src, &data, sizeof(data));
+	printf("pvr_sw_sync_create_fence: name \"%s\" fence %d pad 0x%X sync_pt_idx 0x%llX\n",
+		data.name, data.fence, data.pad, data.sync_pt_idx);
+}
+
+void print_pvr_sw_timeline_advance(int pid, __u64 src)
+{
+	struct pvr_sw_timeline_advance_data data = {0};
+	memcpy_from_trace(pid, src, &data, sizeof(data));
+	printf("pvr_sw_timeline_advance(PVR_SW_SYNC_INC_CMD): sync_pt_idx 0x%llX\n", data.sync_pt_idx);
 }
 
 void print_pvrsrv_init(int pid, __u64 src)
 {
 	struct drm_pvr_srvkm_init_data data = {0};
 	memcpy_from_trace(pid, src, &data, sizeof(data));
-	
+
 	printf("drm_pvr_srvkm_init: %u (", data.init_module);
 
 	switch (data.init_module)
@@ -796,15 +810,21 @@ bool print_drm_ioctl(int pid, __u64 c, __u64 src)
 	case DRM_IOCTL_VERSION:
 		print_drm_version(pid, src);
 		break;
-	case DRM_IOCTL_PVR_SRVKM_INIT:
-	case DRM_IOCTL_SRVKM_INIT:
-		print_pvrsrv_init(pid, src);
-		break;
 	case DRM_IOCTL_PVR_SRVKM_CMD:
 		print_pvrsrv_cmd(pid, src);
 		break;
 	case DRM_IOCTL_PVR_SYNC_RENAME_CMD:
-		print_pvr_sync_rename_cmd(pid, src);
+		print_pvr_sync_rename(pid, src);
+		break;
+	case DRM_IOCTL_PVR_SW_SYNC_CREATE_FENCE_CMD:
+		print_pvr_sw_sync_create_fence(pid, src);
+		break;
+	case DRM_IOCTL_PVR_SW_SYNC_INC_CMD:
+		print_pvr_sw_timeline_advance(pid, src);
+		break;
+	case DRM_IOCTL_PVR_SRVKM_INIT:
+	case DRM_IOCTL_SRVKM_INIT:
+		print_pvrsrv_init(pid, src);
 		break;
 	default:
 		return false;
@@ -825,9 +845,11 @@ void print_syscall(struct ptrace_syscall_info *sci, struct ptrace_syscall_info *
 	if (sci->entry.nr == SYS_ioctl && !sci_exit->exit.is_error
 		&& (sci->entry.args[1] == DRM_IOCTL_VERSION
 		|| sci->entry.args[1] == DRM_IOCTL_PVR_SRVKM_CMD
+		|| sci->entry.args[1] == DRM_IOCTL_PVR_SYNC_RENAME_CMD
+		|| sci->entry.args[1] == DRM_IOCTL_PVR_SW_SYNC_CREATE_FENCE_CMD
+		|| sci->entry.args[1] == DRM_IOCTL_PVR_SW_SYNC_INC_CMD
 		|| sci->entry.args[1] == DRM_IOCTL_PVR_SRVKM_INIT
-		|| sci->entry.args[1] == DRM_IOCTL_SRVKM_INIT
-		|| sci->entry.args[1] == DRM_IOCTL_PVR_SYNC_RENAME_CMD))
+		|| sci->entry.args[1] == DRM_IOCTL_SRVKM_INIT))
 	{
 		printf("ioctl(%lld) ", sci->entry.args[0]);
 		print_drm_ioctl(pid, sci->entry.args[1], sci->entry.args[2]);
