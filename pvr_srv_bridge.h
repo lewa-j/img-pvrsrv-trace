@@ -253,6 +253,17 @@ struct pvr_srv_bridge_alloc_sync_primitive_block_ret
 } PACKED;
 
 
+struct pvr_srv_bridge_free_sync_primitive_block_cmd
+{
+	pvr_handle_t handle;
+} PACKED;
+
+struct pvr_srv_bridge_free_sync_primitive_block_ret
+{
+	pvr_srv_error error;
+} PACKED;
+
+
 struct pvr_srv_bridge_sync_prim_set_cmd
 {
 	pvr_handle_t handle;
@@ -275,6 +286,17 @@ struct pvr_srv_bridge_sync_allocevent_cmd
 } PACKED;
 
 struct pvr_srv_bridge_sync_allocevent_ret
+{
+	pvr_srv_error error;
+} PACKED;
+
+
+struct pvr_srv_bridge_sync_freeevent_cmd
+{
+	uint32_t fw_addr;
+} PACKED;
+
+struct pvr_srv_bridge_sync_freeevent_ret
 {
 	pvr_srv_error error;
 } PACKED;
