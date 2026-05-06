@@ -106,6 +106,39 @@
 /* IMPORTANT: Make sure this always uses the last INFO_PAGE_[NAME]_BLOCK_END definition.*/
 #define INFO_PAGE_TOTAL_SIZE                        INFO_PAGE_SIZE_IN_BYTES(INFO_PAGE_DEVMEM_BLOCK_END)
 
+// pvrsrv_memallocflags.h
+#define PVRSRV_MEMALLOCFLAG_GPU_READABLE		(uint64_t(1)<<0)
+#define PVRSRV_MEMALLOCFLAG_GPU_WRITEABLE		(uint64_t(1)<<1)
+#define PVRSRV_MEMALLOCFLAG_GPU_READ_PERMITTED	(uint64_t(1)<<2)
+#define PVRSRV_MEMALLOCFLAG_GPU_WRITE_PERMITTED	(uint64_t(1)<<3)
+#define PVRSRV_MEMALLOCFLAG_CPU_READABLE		(uint64_t(1)<<4)
+#define PVRSRV_MEMALLOCFLAG_CPU_WRITEABLE		(uint64_t(1)<<5)
+#define PVRSRV_MEMALLOCFLAG_CPU_READ_PERMITTED	(uint64_t(1)<<6)
+#define PVRSRV_MEMALLOCFLAG_CPU_WRITE_PERMITTED	(uint64_t(1)<<7)
+
+#define PVRSRV_MEMALLOCFLAG_GPU_UNCACHED_WC			(uint64_t(0)<<8)
+#define PVRSRV_MEMALLOCFLAG_GPU_UNCACHED			(uint64_t(1)<<8)
+#define PVRSRV_MEMALLOCFLAG_GPU_CACHE_COHERENT		(uint64_t(2)<<8)
+#define PVRSRV_MEMALLOCFLAG_GPU_CACHE_INCOHERENT	(uint64_t(3)<<8)
+#define PVRSRV_MEMALLOCFLAG_GPU_CACHED				(uint64_t(7)<<8)
+
+#define PVRSRV_MEMALLOCFLAG_GPU_CACHE_MODE_MASK		(uint64_t(7)<<8)
+#define PVRSRV_GPU_CACHE_MODE(uiFlags)				((uiFlags) & PVRSRV_MEMALLOCFLAG_GPU_CACHE_MODE_MASK)
+
+#define PVRSRV_MEMALLOCFLAG_CPU_UNCACHED_WC			(uint64_t(0)<<11)
+#define PVRSRV_MEMALLOCFLAG_CPU_CACHE_COHERENT		(uint64_t(2)<<11)
+#define PVRSRV_MEMALLOCFLAG_CPU_CACHE_INCOHERENT	(uint64_t(3)<<11)
+#define PVRSRV_MEMALLOCFLAG_CPU_CACHED				(uint64_t(7)<<11)
+
+#define PVRSRV_MEMALLOCFLAG_CPU_CACHE_MODE_MASK		(uint64_t(7)<<11)
+#define PVRSRV_CPU_CACHE_MODE(uiFlags)				((uiFlags) & PVRSRV_MEMALLOCFLAG_CPU_CACHE_MODE_MASK)
+
+#define PVRSRV_MEMALLOCFLAG_KERNEL_CPU_MAPPABLE		(uint64_t(1)<<14)
+
+#define PVRSRV_PHYS_HEAP_HINT_SHIFT			(59)
+#define PVRSRV_PHYS_HEAP_HINT_MASK			(uint64_t(0x1F) << PVRSRV_PHYS_HEAP_HINT_SHIFT)
+#define PVRSRV_GET_PHYS_HEAP_HINT(uiFlags)	((pvr_phys_heap)(((uiFlags) & PVRSRV_PHYS_HEAP_HINT_MASK) >> PVRSRV_PHYS_HEAP_HINT_SHIFT))
+
 
 #define Log printf
 #define LogError printf
@@ -423,6 +456,7 @@ X(PRIMARY)
 	}
 
 	pvr_handle_t general_heap = 0;
+	pvr_handle_t general_heap_pmr = 0;
 	ret = PVRSRVDevmemIntHeapCreate(fd, server_memctx, 0, general_heap_index, &general_heap);
 	if (ret)
 	{
@@ -431,7 +465,33 @@ X(PRIMARY)
 	}
 	Log("DevmemIntHeapCreate(general %d) %p\n", general_heap_index, general_heap);
 
+	{
+		heap_details_t &gh = heap_infos[general_heap_index];
+		uint32_t size = 1 << gh.log2_data_page_size;
+		uint32_t mapping_table = 0;
+		uint64_t flags =
+			PVRSRV_MEMALLOCFLAG_GPU_READABLE |
+			PVRSRV_MEMALLOCFLAG_GPU_WRITEABLE |
+			PVRSRV_MEMALLOCFLAG_CPU_READABLE |
+			PVRSRV_MEMALLOCFLAG_CPU_WRITEABLE |
+			PVRSRV_MEMALLOCFLAG_GPU_CACHE_INCOHERENT;
+		uint64_t out_flags = 0;
+		const char *annotation = "General Static Memory";
+		ret = PVRSRVPhysmemNewRamBackedPMR(fd, size, 1, 1, &mapping_table, gh.log2_data_page_size, flags,
+			strlen(annotation) + 1, annotation, getpid(), &general_heap_pmr, 0, &out_flags);
+		if (ret)
+		{
+			close(fd);
+			return -1;
+		}
+		Log("PhysmemNewRamBackedPMR(general) %p flags 0x%" PRIX64 " out_flags 0x%" PRIX64 , general_heap_pmr, flags, out_flags);
+		Log(" PHYS_HEAP_HINT %d\n", PVRSRV_GET_PHYS_HEAP_HINT(out_flags));
+	}
+
 	//cleanup
+	ret = PVRSRVPMRUnrefPMR(fd, general_heap_pmr);
+	Log("PMRUnrefPMR(general_heap_pmr) %d\n", ret);
+
 	ret = PVRSRVDevmemIntHeapDestroy(fd, general_heap);
 	Log("DevmemIntHeapDestroy %d\n", ret);
 

@@ -224,6 +224,44 @@ pvr_srv_error PVRSRVPMRUnrefPMR(int fd, pvr_handle_t pmr)
 	return ret.error;
 }
 
+pvr_srv_error PVRSRVPhysmemNewRamBackedPMR(int fd, uint64_t size, uint32_t num_phys_chunks, uint32_t num_virt_chunks,
+	uint32_t *mapping_table, uint32_t log2_page_size, uint64_t flags, uint32_t annotation_length, const char *annotation,
+	uint32_t pid, pvr_handle_t *pmr, uint32_t pdump_flags, uint64_t *out_flags)
+{
+	struct pvr_srv_physmem_new_ram_backed_pmr_cmd cmd = {
+		.size = size,
+		.mapping_table = mapping_table,
+		.annotation = annotation,
+		.annotation_size = annotation_length,
+		.log2_page_size = log2_page_size,
+		.phy_blocks = num_phys_chunks,
+		.virt_blocks = num_virt_chunks,
+		.pdump_flags = pdump_flags,
+		.pid = pid,
+		.flags = flags,
+	};
+
+	/* Initialize ret.error to a default error */
+	struct pvr_srv_physmem_new_ram_backed_pmr_ret ret = {
+		.error = PVR_SRV_ERROR_BRIDGE_CALL_FAILED,
+	};
+
+	int result = pvr_srv_bridge_call(fd, PVR_SRV_BRIDGE_MM, PVR_SRV_BRIDGE_MM_PHYSMEMNEWRAMBACKEDPMR,
+		&cmd, sizeof(cmd), &ret, sizeof(ret));
+	if (result || ret.error != PVR_SRV_OK)
+	{
+		LogError("PVR_SRV_BRIDGE_MM_PHYSMEMNEWRAMBACKEDPMR %d error %d", result, ret.error);
+		return ret.error;
+	}
+
+	if (pmr)
+		*pmr = ret.pmr;
+	if (out_flags)
+		*out_flags = ret.out_flags;
+
+	return ret.error;
+}
+
 pvr_srv_error PVRSRVDevmemIntCtxCreate(int fd, bool kernelMemoryCtx,
 	pvr_handle_t *devMemServerContext, pvr_handle_t *privData, uint32_t *CPUCacheLineSize)
 {

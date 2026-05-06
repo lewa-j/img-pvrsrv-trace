@@ -921,8 +921,13 @@ pvr_srv_error PVRSRVReleaseInfoPage(int fd, pvr_handle_t pmr);
 // PMRUnmakeLocalImportHandle
 pvr_srv_error PVRSRVPMRLocalImportPMR(int fd, pvr_handle_t ext_handle, pvr_handle_t *pmr, uint64_t *size, uint64_t *align);
 pvr_srv_error PVRSRVPMRUnrefPMR(int fd, pvr_handle_t pmr);
+pvr_srv_error PVRSRVPhysmemNewRamBackedPMR(int fd, uint64_t size, uint32_t num_phys_chunks, uint32_t num_virt_chunks,
+	uint32_t *mapping_table, uint32_t log2_page_size, uint64_t flags, uint32_t annotation_length, const char *annotation,
+	uint32_t pid, pvr_handle_t *pmr, uint32_t pdump_flags, uint64_t *out_flags);
+
 pvr_srv_error PVRSRVDevmemIntCtxCreate(int fd, bool kernelMemoryCtx,
 	pvr_handle_t *devMemServerContext, pvr_handle_t *privData, uint32_t *CPUCacheLineSize);
+
 pvr_srv_error PVRSRVDevmemIntCtxDestroy(int fd, pvr_handle_t devMemServerContext);
 pvr_srv_error PVRSRVDevmemIntHeapCreate(int fd, pvr_handle_t devmem_ctx, uint32_t heap_config_index, uint32_t heap_index, pvr_handle_t *devmem_heap);
 pvr_srv_error PVRSRVDevmemIntHeapDestroy(int fd, pvr_handle_t devmem_heap);
@@ -931,7 +936,7 @@ pvr_srv_error PVRSRVHeapCfgHeapConfigCount(int fd, uint32_t *heap_config_count);
 pvr_srv_error PVRSRVHeapCfgHeapCount(int fd, uint32_t heap_config_index, uint32_t *heap_count);
 pvr_srv_error PVRSRVHeapCfgHeapConfigName(int fd, uint32_t heap_config_index, uint32_t config_name_size, char *config_name_buffer);
 pvr_srv_error PVRSRVHeapCfgHeapDetails(int fd, uint32_t heap_config_index, uint32_t heap_index, uint32_t name_size, char *name_buffer,
-pvr_dev_addr_t *base_addr, uint64_t *heap_size, uint64_t *reserved_size, uint32_t *log2_data_page_size, uint32_t *log2_import_alignment);
+	pvr_dev_addr_t *base_addr, uint64_t *heap_size, uint64_t *reserved_size, uint32_t *log2_data_page_size, uint32_t *log2_import_alignment);
 
 //RGXTQGetSharedMemory
 //RGXTQReleaseSharedMemory
