@@ -274,6 +274,53 @@ pvr_srv_error PVRSRVDevmemIntCtxDestroy(int fd, pvr_handle_t devMemServerContext
 	return ret.error;
 }
 
+pvr_srv_error PVRSRVDevmemIntHeapCreate(int fd, pvr_handle_t devmem_ctx, uint32_t heap_config_index, uint32_t heap_index, pvr_handle_t *devmem_heap)
+{
+	struct pvr_srv_devmem_int_heap_create_cmd cmd = {
+		.server_memctx = devmem_ctx,
+		.heap_config_index = heap_config_index,
+		.heap_index = heap_index,
+	};
+
+	/* Initialize ret.error to a default error */
+	struct pvr_srv_devmem_int_heap_create_ret ret = {
+		.error = PVR_SRV_ERROR_BRIDGE_CALL_FAILED,
+	};
+
+	int result = pvr_srv_bridge_call(fd, PVR_SRV_BRIDGE_MM, PVR_SRV_BRIDGE_MM_DEVMEMINTHEAPCREATE,
+		&cmd, sizeof(cmd), &ret, sizeof(ret));
+	if (result || ret.error != PVR_SRV_OK)
+	{
+		LogError("PVR_SRV_BRIDGE_MM_DEVMEMINTHEAPCREATE %d error %d", result, ret.error);
+		return ret.error;
+	}
+
+	if (devmem_heap)
+		*devmem_heap = ret.server_heap;
+
+	return ret.error;
+}
+
+pvr_srv_error PVRSRVDevmemIntHeapDestroy(int fd, pvr_handle_t devmem_heap)
+{
+	struct pvr_srv_devmem_int_heap_destroy_cmd cmd = {
+		.server_heap = devmem_heap,
+	};
+
+	/* Initialize ret.error to a default error */
+	struct pvr_srv_devmem_int_heap_destroy_ret ret = {
+		.error = PVR_SRV_ERROR_BRIDGE_CALL_FAILED,
+	};
+
+	int result = pvr_srv_bridge_call(fd, PVR_SRV_BRIDGE_MM, PVR_SRV_BRIDGE_MM_DEVMEMINTHEAPDESTROY,
+		&cmd, sizeof(cmd), &ret, sizeof(ret));
+	if (result || ret.error != PVR_SRV_OK)
+	{
+		LogError("PVR_SRV_BRIDGE_MM_DEVMEMINTHEAPDESTROY %d error %d", result, ret.error);
+	}
+	return ret.error;
+}
+
 pvr_srv_error PVRSRVHeapCfgHeapConfigCount(int fd, uint32_t *heap_config_count)
 {
 	/* Initialize ret.error to a default error */

@@ -372,7 +372,19 @@ X(PRIMARY)
 		return -1;
 	}
 	Log("MM_HEAPCFGHEAPCONFIGCOUNT %d\n", heap_config_count);
-	for(uint32_t hci = 0; hci < heap_config_count; hci++)
+
+	struct heap_details_t
+	{
+		pvr_dev_addr_t base_addr;
+		uint64_t heap_size = 0;
+		uint64_t reserved_size = 0;
+		uint32_t log2_data_page_size = 0;
+		uint32_t log2_import_alignment = 0;
+	};
+	heap_details_t heap_infos[10];
+
+	uint32_t general_heap_index = 0;
+	for (uint32_t hci = 0; hci < heap_config_count; hci++)
 	{
 		char buffer[PVR_DEVMEM_HEAPNAME_MAXLENGTH] ={0};
 		ret = PVRSRVHeapCfgHeapConfigName(fd, hci, sizeof(buffer), buffer);
@@ -391,24 +403,37 @@ X(PRIMARY)
 		Log("  %d: name \"%s\" heap_count %d\n", hci, buffer, heap_count);
 		for (uint32_t hi = 0; hi < heap_count; hi++)
 		{
-			pvr_dev_addr_t base_addr;
-			uint64_t heap_size = 0;
-			uint64_t reserved_size = 0;
-			uint32_t log2_data_page_size = 0;
-			uint32_t log2_import_alignment = 0;
+			heap_details_t hd;
 			ret = PVRSRVHeapCfgHeapDetails(fd, hci, hi, sizeof(buffer), buffer,
-				&base_addr, &heap_size, &reserved_size, &log2_data_page_size, &log2_import_alignment);
+				&hd.base_addr, &hd.heap_size, &hd.reserved_size, &hd.log2_data_page_size, &hd.log2_import_alignment);
 			if (ret)
 			{
 				close(fd);
 				return -1;
 			}
 			Log("    %d: name \"%-22s\" size %10" PRIX64 " reserved %5" PRIX64 " base_addr %10" PRIX64 " log2_data_page_size %d log2_import_alignment %d\n",
-				hi, buffer, heap_size, reserved_size, base_addr.addr, log2_data_page_size, log2_import_alignment);
+				hi, buffer, hd.heap_size, hd.reserved_size, hd.base_addr.addr, hd.log2_data_page_size, hd.log2_import_alignment);
+			if (hci == 0 && hi < 10)
+			{
+				heap_infos[hi] = hd;
+				if (strcmp(buffer, "General") == 0)
+					general_heap_index = hi;
+			}
 		}
 	}
 
+	pvr_handle_t general_heap = 0;
+	ret = PVRSRVDevmemIntHeapCreate(fd, server_memctx, 0, general_heap_index, &general_heap);
+	if (ret)
+	{
+		close(fd);
+		return -1;
+	}
+	Log("DevmemIntHeapCreate(general %d) %p\n", general_heap_index, general_heap);
+
 	//cleanup
+	ret = PVRSRVDevmemIntHeapDestroy(fd, general_heap);
+	Log("DevmemIntHeapDestroy %d\n", ret);
 
 	ret = PVRSRVDevmemIntCtxDestroy(fd, server_memctx);
 	Log("MM_DEVMEMINTCTXDESTROY %d\n", ret);

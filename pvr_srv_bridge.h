@@ -924,6 +924,9 @@ pvr_srv_error PVRSRVPMRUnrefPMR(int fd, pvr_handle_t pmr);
 pvr_srv_error PVRSRVDevmemIntCtxCreate(int fd, bool kernelMemoryCtx,
 	pvr_handle_t *devMemServerContext, pvr_handle_t *privData, uint32_t *CPUCacheLineSize);
 pvr_srv_error PVRSRVDevmemIntCtxDestroy(int fd, pvr_handle_t devMemServerContext);
+pvr_srv_error PVRSRVDevmemIntHeapCreate(int fd, pvr_handle_t devmem_ctx, uint32_t heap_config_index, uint32_t heap_index, pvr_handle_t *devmem_heap);
+pvr_srv_error PVRSRVDevmemIntHeapDestroy(int fd, pvr_handle_t devmem_heap);
+
 pvr_srv_error PVRSRVHeapCfgHeapConfigCount(int fd, uint32_t *heap_config_count);
 pvr_srv_error PVRSRVHeapCfgHeapCount(int fd, uint32_t heap_config_index, uint32_t *heap_count);
 pvr_srv_error PVRSRVHeapCfgHeapConfigName(int fd, uint32_t heap_config_index, uint32_t config_name_size, char *config_name_buffer);
